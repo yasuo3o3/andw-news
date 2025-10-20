@@ -307,13 +307,14 @@ class ANDW_News_Admin {
 
         $source_name = sanitize_text_field($_POST['source_name'] ?? '');
         $new_name = sanitize_text_field($_POST['new_name'] ?? '');
+        $display_name = sanitize_text_field($_POST['display_name'] ?? '');
 
         if (empty($source_name) || empty($new_name)) {
             wp_send_json_error(['message' => 'Source and new template names are required']);
         }
 
         $template_manager = new ANDW_News_Template_Manager();
-        $result = $template_manager->duplicate_template($source_name, $new_name);
+        $result = $template_manager->duplicate_template($source_name, $new_name, $display_name);
 
         if ($result) {
             wp_send_json_success(['message' => 'Template duplicated successfully']);

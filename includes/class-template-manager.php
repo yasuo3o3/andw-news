@@ -202,10 +202,11 @@ class ANDW_News_Template_Manager {
      * テンプレートを複製
      *
      * @param string $source_template_name 複製元テンプレート名
-     * @param string $new_template_name 新しいテンプレート名
+     * @param string $new_template_name 新しいテンプレート名（内部キー）
+     * @param string $display_name 表示名（オプション）
      * @return bool 成功/失敗
      */
-    public function duplicate_template($source_template_name, $new_template_name) {
+    public function duplicate_template($source_template_name, $new_template_name, $display_name = '') {
         if (empty($source_template_name) || empty($new_template_name)) {
             return false;
         }
@@ -216,7 +217,13 @@ class ANDW_News_Template_Manager {
         }
 
         $new_template = $source_template;
-        $new_template['name'] = sanitize_text_field($new_template['name'] . ' のコピー');
+
+        // 表示名が指定されていればそれを使用、なければデフォルト
+        if (!empty($display_name)) {
+            $new_template['name'] = sanitize_text_field($display_name);
+        } else {
+            $new_template['name'] = sanitize_text_field($new_template['name'] . ' のコピー');
+        }
 
         return $this->save_template($new_template_name, $new_template);
     }

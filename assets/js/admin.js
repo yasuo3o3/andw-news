@@ -249,8 +249,12 @@
      * テンプレートを複製
      */
     function duplicateTemplate(templateName) {
-        const newName = prompt('新しいテンプレート名を入力してください:', templateName + '_copy');
-        if (!newName) return;
+        const displayName = prompt('新しいテンプレート名を入力してください:', templateName + ' のコピー');
+        if (!displayName) return;
+
+        // 内部キーを英数字で生成（表示名とは別）
+        const timestamp = Date.now();
+        const internalKey = templateName + '_copy_' + timestamp;
 
         $.ajax({
             url: andwNewsAdmin.ajaxurl,
@@ -258,7 +262,8 @@
             data: {
                 action: 'andw_news_duplicate_template',
                 source_name: templateName,
-                new_name: newName,
+                new_name: internalKey,
+                display_name: displayName,
                 nonce: andwNewsAdmin.nonce
             },
             success: function(response) {
