@@ -22,6 +22,7 @@ class ANDW_News_Admin {
         add_action('wp_ajax_andw_news_duplicate_template', [$this, 'ajax_duplicate_template']);
         add_action('wp_ajax_andw_news_delete_template', [$this, 'ajax_delete_template']);
         add_action('wp_ajax_andw_news_set_default_template', [$this, 'ajax_set_default_template']);
+        add_action('wp_ajax_andw_news_scf_debug', [$this, 'ajax_scf_debug']);
         add_action('admin_init', [$this, 'handle_form_submissions']);
     }
 
@@ -166,6 +167,14 @@ class ANDW_News_Admin {
                         <h4><?php echo esc_html__('Gutenbergブロック', 'andw-news-changer'); ?></h4>
                         <p><?php echo esc_html__('「andW News List」ブロックを検索して使用できます。', 'andw-news-changer'); ?></p>
                     </div>
+
+                    <!-- SCFデバッグ -->
+                    <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
+                    <div class="card">
+                        <h2 class="title"><?php echo esc_html__('SCFデバッグ', 'andw-news-changer'); ?></h2>
+                        <?php $this->render_scf_debug_section(); ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -445,5 +454,173 @@ class ANDW_News_Admin {
             );
             echo '</p></div>';
         }
+    }
+
+    /**
+     * SCFデバッグセクションをレンダリング
+     */
+    private function render_scf_debug_section() {
+        ?>
+        <form id="scf-debug-form">
+            <table class="form-table">
+                <tr>
+                    <th scope="row">
+                        <label for="debug-post-id"><?php echo esc_html__('投稿ID', 'andw-news-changer'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="debug-post-id" class="regular-text" placeholder="<?php echo esc_attr__('空白で最新投稿', 'andw-news-changer'); ?>" />
+                        <p class="description"><?php echo esc_html__('デバッグしたいandw-news投稿のIDを入力してください。', 'andw-news-changer'); ?></p>
+                    </td>
+                </tr>
+            </table>
+            <p class="submit">
+                <button type="button" id="run-scf-debug" class="button button-primary">
+                    <?php echo esc_html__('SCFデバッグ実行', 'andw-news-changer'); ?>
+                </button>
+            </p>
+        </form>
+        <div id="scf-debug-results" style="margin-top: 20px; display: none;">
+            <h4><?php echo esc_html__('デバッグ結果', 'andw-news-changer'); ?></h4>
+            <pre id="scf-debug-output" style="background: #f1f1f1; padding: 10px; overflow: auto; max-height: 400px; font-size: 12px;"></pre>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('run-scf-debug').addEventListener('click', function() {
+                var postId = document.getElementById('debug-post-id').value;
+                var button = this;
+                var originalText = button.textContent;
+
+                button.textContent = '<?php echo esc_js(__('実行中...', 'andw-news-changer')); ?>';
+                button.disabled = true;
+
+                var formData = new FormData();
+                formData.append('action', 'andw_news_scf_debug');
+                formData.append('post_id', postId);
+                formData.append('nonce', '<?php echo wp_create_nonce('andw_news_scf_debug'); ?>');
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('scf-debug-output').textContent = JSON.stringify(data.data, null, 2);
+                        document.getElementById('scf-debug-results').style.display = 'block';
+                    } else {
+                        alert('<?php echo esc_js(__('エラーが発生しました: ', 'andw-news-changer')); ?>' + (data.data || '<?php echo esc_js(__('不明なエラー', 'andw-news-changer')); ?>'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('<?php echo esc_js(__('通信エラーが発生しました', 'andw-news-changer')); ?>');
+                })
+                .finally(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                });
+            });
+        });
+        </script>
+        <?php
+    }
+
+    /**
+     * AJAX: SCFデバッグを実行
+     */
+    public function ajax_scf_debug() {
+        // nonce検証
+        if (!wp_verify_nonce($_POST['nonce'], 'andw_news_scf_debug')) {
+            wp_send_json_error(__('不正なリクエストです。', 'andw-news-changer'));
+        }
+
+        // 権限チェック
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('権限がありません。', 'andw-news-changer'));
+        }
+
+        $post_id = isset($_POST['post_id']) && !empty($_POST['post_id']) ? intval($_POST['post_id']) : null;
+
+        try {
+            $debug_info = $this->debug_scf_fields($post_id);
+            wp_send_json_success($debug_info);
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+
+    /**
+     * SCFフィールドデバッグ処理
+     */
+    private function debug_scf_fields($post_id = null) {
+        if (!$post_id) {
+            // andw-news投稿タイプの最初の投稿を取得
+            $posts = get_posts([
+                'post_type' => 'andw-news',
+                'numberposts' => 1,
+                'post_status' => 'publish'
+            ]);
+
+            if (empty($posts)) {
+                throw new Exception(__('andw-news投稿が見つかりません', 'andw-news-changer'));
+            }
+
+            $post_id = $posts[0]->ID;
+        }
+
+        $debug_info = [];
+        $debug_info['post_id'] = $post_id;
+        $debug_info['post_title'] = get_the_title($post_id);
+
+        // SCFプラグインがアクティブかチェック
+        $debug_info['scf_active'] = class_exists('Smart_Custom_Fields');
+
+        // 全メタデータを取得
+        $all_meta = get_post_meta($post_id);
+        $debug_info['all_meta'] = $all_meta;
+
+        // 特定のandwフィールドをチェック
+        $andw_fields = [
+            'andw_news_pinned',
+            'andw_link_type',
+            'andw_internal_link',
+            'andw_external_link',
+            'andw_link_target',
+            'andw_event_type',
+            'andw_event_single_date',
+            'andw_event_start_date',
+            'andw_event_end_date',
+            'andw_event_free_text',
+            'andw_subcontents'
+        ];
+
+        $debug_info['andw_fields'] = [];
+        foreach ($andw_fields as $field) {
+            $value = get_post_meta($post_id, $field, true);
+            $debug_info['andw_fields'][$field] = [
+                'value' => $value,
+                'type' => gettype($value),
+                'empty' => empty($value),
+                'raw_value' => var_export($value, true)
+            ];
+        }
+
+        // SCF特有の取得方法もテスト
+        if (class_exists('Smart_Custom_Fields')) {
+            $debug_info['scf_methods'] = [];
+            foreach ($andw_fields as $field) {
+                // SCFの場合はSCF::get()メソッドを使うことがある
+                if (method_exists('SCF', 'get')) {
+                    $scf_value = SCF::get($field, $post_id);
+                    $debug_info['scf_methods'][$field] = [
+                        'scf_get' => $scf_value,
+                        'type' => gettype($scf_value)
+                    ];
+                }
+            }
+        }
+
+        return $debug_info;
     }
 }
