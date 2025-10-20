@@ -180,7 +180,7 @@ add_action('wp_enqueue_scripts', 'andw_news_register_assets');
  */
 function andw_news_admin_assets($hook) {
     // 管理画面ページでのみ読み込み
-    if ($hook !== 'toplevel_page_andw-news-changer') {
+    if ($hook !== 'settings_page_andw-news-changer') {
         return;
     }
 

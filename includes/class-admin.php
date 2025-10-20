@@ -29,14 +29,12 @@ class ANDW_News_Admin {
      * 管理メニューを追加
      */
     public function add_admin_menu() {
-        add_menu_page(
-            __('お知らせチェンジャー設定', 'andw-news-changer'),
-            __('お知らせチェンジャー設定', 'andw-news-changer'),
+        add_options_page(
+            __('お知らせ設定', 'andw-news-changer'),
+            __('お知らせ設定', 'andw-news-changer'),
             'manage_options',
             'andw-news-changer',
-            [$this, 'admin_page'],
-            'dashicons-admin-page',
-            30
+            [$this, 'admin_page']
         );
     }
 
@@ -56,7 +54,7 @@ class ANDW_News_Admin {
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('お知らせチェンジャー設定', 'andw-news-changer'); ?></h1>
+            <h1><?php echo esc_html__('お知らせ設定', 'andw-news-changer'); ?></h1>
 
             <?php $this->show_admin_notices(); ?>
 
