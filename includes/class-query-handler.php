@@ -204,8 +204,11 @@ class ANDW_News_Query_Handler {
      * @return string リンクURL
      */
     private function get_post_link_url($post_id) {
-        // SCFフィールドを確認
+        // SCFフィールドを確認（ハイフンとアンダースコア両対応）
         $link_type = get_post_meta($post_id, 'andw_link_type', true);
+        if (empty($link_type)) {
+            $link_type = get_post_meta($post_id, 'andw-link-type', true);
+        }
 
         // デバッグ情報（開発環境のみ）
         if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -215,6 +218,9 @@ class ANDW_News_Query_Handler {
         switch ($link_type) {
             case 'internal':
                 $internal_link = get_post_meta($post_id, 'andw_internal_link', true);
+                if (empty($internal_link)) {
+                    $internal_link = get_post_meta($post_id, 'andw-internal-link', true);
+                }
 
                 // デバッグ情報
                 if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -243,6 +249,9 @@ class ANDW_News_Query_Handler {
 
             case 'external':
                 $external_link = get_post_meta($post_id, 'andw_external_link', true);
+                if (empty($external_link)) {
+                    $external_link = get_post_meta($post_id, 'andw-external-link', true);
+                }
 
                 // デバッグ情報
                 if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -281,6 +290,9 @@ class ANDW_News_Query_Handler {
      */
     private function get_post_link_target($post_id) {
         $link_target = get_post_meta($post_id, 'andw_link_target', true);
+        if (empty($link_target)) {
+            $link_target = get_post_meta($post_id, 'andw-link-target', true);
+        }
         return esc_attr($link_target ?: '_self');
     }
 
@@ -292,6 +304,9 @@ class ANDW_News_Query_Handler {
      */
     private function get_event_date($post_id) {
         $event_type = get_post_meta($post_id, 'andw_event_type', true);
+        if (empty($event_type)) {
+            $event_type = get_post_meta($post_id, 'andw-event-type', true);
+        }
 
         if (empty($event_type) || $event_type === 'none') {
             return '';
@@ -338,32 +353,47 @@ class ANDW_News_Query_Handler {
     private function get_custom_fields($post_id) {
         $custom_fields = [];
 
-        // 明示的にチェックするandwフィールドのリスト
+        // 明示的にチェックするandwフィールドのリスト（ハイフンとアンダースコア両対応）
         $expected_fields = [
-            'andw_news_pinned',
-            'andw_link_type',
-            'andw_internal_link',
-            'andw_external_link',
-            'andw_link_target',
-            'andw_event_type',
-            'andw_event_single_date',
-            'andw_event_start_date',
-            'andw_event_end_date',
-            'andw_event_free_text',
-            'andw_subcontents'
+            'andw_news_pinned' => ['andw_news_pinned', 'andw-news-pinned'],
+            'andw_link_type' => ['andw_link_type', 'andw-link-type'],
+            'andw_internal_link' => ['andw_internal_link', 'andw-internal-link'],
+            'andw_external_link' => ['andw_external_link', 'andw-external-link'],
+            'andw_link_target' => ['andw_link_target', 'andw-link-target'],
+            'andw_event_type' => ['andw_event_type', 'andw-event-type'],
+            'andw_event_single_date' => ['andw_event_single_date', 'andw-event-single-date'],
+            'andw_event_start_date' => ['andw_event_start_date', 'andw-event-start-date'],
+            'andw_event_end_date' => ['andw_event_end_date', 'andw-event-end-date'],
+            'andw_event_free_text' => ['andw_event_free_text', 'andw-event-free-text'],
+            'andw_subcontents' => ['andw_subcontents', 'andw-subcontents']
         ];
 
         // 明示的フィールドを最初に処理
-        foreach ($expected_fields as $field_key) {
-            $field_value = get_post_meta($post_id, $field_key, true);
+        foreach ($expected_fields as $canonical_key => $field_variants) {
+            $field_value = '';
 
-            // SCFプラグインが有効な場合は SCF::get() も試す
+            // 各バリエーションを試す（アンダースコア、ハイフン）
+            foreach ($field_variants as $field_name) {
+                $value = get_post_meta($post_id, $field_name, true);
+                if (!empty($value)) {
+                    $field_value = $value;
+                    break;
+                }
+            }
+
+            // まだ空の場合、SCFプラグインが有効なら試す
             if (empty($field_value) && class_exists('SCF') && method_exists('SCF', 'get')) {
-                $field_value = SCF::get($field_key, $post_id);
+                foreach ($field_variants as $field_name) {
+                    $scf_value = SCF::get($field_name, $post_id);
+                    if (!empty($scf_value)) {
+                        $field_value = $scf_value;
+                        break;
+                    }
+                }
             }
 
             // 空でも配列に含める（テンプレートトークン置換のため）
-            $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
+            $custom_fields[$canonical_key] = !empty($field_value) ? esc_html($field_value) : '';
         }
 
         // その他のandwプレフィックスフィールドも取得
