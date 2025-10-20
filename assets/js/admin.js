@@ -150,7 +150,7 @@
                                 <td>
                                     <textarea id="template-html" class="large-text code" rows="15" required>${templateData.html}</textarea>
                                     <p class="description">
-                                        使用可能なトークン: {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}
+                                        使用可能なトークン: {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}, {andw_subcontents}, {andw_link_type}等のSCFフィールド
                                     </p>
                                 </td>
                             </tr>

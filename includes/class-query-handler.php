@@ -146,6 +146,9 @@ class ANDW_News_Query_Handler {
             'event_date' => $this->get_event_date($post_id)
         ];
 
+        // SCFフィールドを動的に追加
+        $data = array_merge($data, $this->get_custom_fields($post_id));
+
         return $data;
     }
 
@@ -264,5 +267,34 @@ class ANDW_News_Query_Handler {
         }
 
         return $event_html;
+    }
+
+    /**
+     * カスタムフィールド（SCF）を動的に取得
+     *
+     * @param int $post_id 投稿ID
+     * @return array カスタムフィールドの配列
+     */
+    private function get_custom_fields($post_id) {
+        $custom_fields = [];
+
+        // andwプレフィックスのカスタムフィールドを取得
+        $all_meta = get_post_meta($post_id);
+
+        if (is_array($all_meta)) {
+            foreach ($all_meta as $meta_key => $meta_values) {
+                // andwプレフィックスのフィールドのみ処理
+                if (strpos($meta_key, 'andw_') === 0 || strpos($meta_key, 'andw-') === 0) {
+                    $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
+
+                    // 値をサニタイズ
+                    if (!empty($field_value)) {
+                        $custom_fields[$meta_key] = esc_html($field_value);
+                    }
+                }
+            }
+        }
+
+        return $custom_fields;
     }
 }

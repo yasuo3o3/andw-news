@@ -51,6 +51,9 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 * `{event_date}` - イベント日付（SCFフィールド）
 * `{link_url}` - リンクURL
 * `{link_target}` - リンクターゲット
+* `{andw_subcontents}` - サブコンテンツ（SCFフィールド）
+* `{andw_link_type}` - リンクタイプ（SCFフィールド）
+* その他の`andw_`または`andw-`プレフィックスのSCFフィールド
 
 = CSS上書き =
 

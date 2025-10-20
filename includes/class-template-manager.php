@@ -267,6 +267,16 @@ class ANDW_News_Template_Manager {
             '{link_target}' => $data['link_target'] ?? '_self',
         ];
 
+        // 動的にSCFフィールドのトークンを追加
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                // andwプレフィックスのフィールドをトークンとして追加
+                if ((strpos($key, 'andw_') === 0 || strpos($key, 'andw-') === 0) && !isset($tokens['{' . $key . '}'])) {
+                    $tokens['{' . $key . '}'] = $value;
+                }
+            }
+        }
+
         return str_replace(array_keys($tokens), array_values($tokens), $html);
     }
 }
