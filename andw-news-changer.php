@@ -117,14 +117,36 @@ function andw_news_register_assets() {
     if (is_admin()) {
         $should_load_tabs = true;
     }
-    // 単一投稿ページでショートコードまたはブロックを使用している場合
-    elseif (is_singular()) {
-        $post_id = get_the_ID();
-        if ($post_id) {
-            $content = get_post_field('post_content', $post_id);
-            if ($content) {
-                $should_load_tabs = has_block('andw-news-changer/news-list', $content) ||
-                                  has_shortcode($content, 'andw_news');
+    // フロントエンドでの判定
+    else {
+        // 単一投稿ページの場合
+        if (is_singular()) {
+            $post_id = get_queried_object_id();
+            if ($post_id) {
+                $content = get_post_field('post_content', $post_id);
+                if ($content) {
+                    $should_load_tabs = has_block('andw-news-changer/news-list', $content) ||
+                                      has_shortcode($content, 'andw_news');
+                }
+            }
+        }
+
+        // まだ見つからない場合はグローバル検索（アーカイブページ等）
+        if (!$should_load_tabs) {
+            // ページ全体でブロックまたはショートコードをチェック
+            $should_load_tabs = has_block('andw-news-changer/news-list');
+
+            // ショートコードのグローバルチェック（より安全な方法）
+            if (!$should_load_tabs && function_exists('has_shortcode')) {
+                global $wp_query;
+                if (isset($wp_query->posts) && is_array($wp_query->posts)) {
+                    foreach ($wp_query->posts as $post) {
+                        if (has_shortcode($post->post_content, 'andw_news')) {
+                            $should_load_tabs = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
