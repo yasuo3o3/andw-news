@@ -133,18 +133,30 @@ function andw_news_register_assets() {
 
         // まだ見つからない場合はグローバル検索（アーカイブページ等）
         if (!$should_load_tabs) {
-            // ページ全体でブロックまたはショートコードをチェック
-            $should_load_tabs = has_block('andw-news-changer/news-list');
+            global $wp_query;
+            if (isset($wp_query->posts) && is_array($wp_query->posts)) {
+                foreach ($wp_query->posts as $post) {
+                    // ブロックチェック：投稿内容を直接渡す
+                    if (has_block('andw-news-changer/news-list', $post->post_content)) {
+                        $should_load_tabs = true;
+                        break;
+                    }
 
-            // ショートコードのグローバルチェック（より安全な方法）
-            if (!$should_load_tabs && function_exists('has_shortcode')) {
-                global $wp_query;
-                if (isset($wp_query->posts) && is_array($wp_query->posts)) {
-                    foreach ($wp_query->posts as $post) {
-                        if (has_shortcode($post->post_content, 'andw_news')) {
-                            $should_load_tabs = true;
-                            break;
+                    // parse_blocks()による追加チェック（より確実）
+                    if (!$should_load_tabs && function_exists('parse_blocks')) {
+                        $blocks = parse_blocks($post->post_content);
+                        foreach ($blocks as $block) {
+                            if ($block['blockName'] === 'andw-news-changer/news-list') {
+                                $should_load_tabs = true;
+                                break 2; // 外側のループも抜ける
+                            }
                         }
+                    }
+
+                    // ショートコードチェック
+                    if (!$should_load_tabs && function_exists('has_shortcode') && has_shortcode($post->post_content, 'andw_news')) {
+                        $should_load_tabs = true;
+                        break;
                     }
                 }
             }
