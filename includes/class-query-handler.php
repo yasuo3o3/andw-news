@@ -57,8 +57,24 @@ class ANDW_News_Query_Handler {
 
         // ピン留め優先の場合
         if ($args['pinned_first']) {
+            // ピン留めフィールドでソート（ピン留め投稿を優先、その後日付順）
+            $query_args['meta_query'][] = [
+                'relation' => 'OR',
+                [
+                    'key' => 'andw_news_pinned',
+                    'value' => '1',
+                    'compare' => '='
+                ],
+                [
+                    'key' => 'andw_news_pinned',
+                    'compare' => 'NOT EXISTS'
+                ]
+            ];
+            $query_args['orderby'] = [
+                'meta_value_num' => 'DESC',
+                'date' => 'DESC'
+            ];
             $query_args['meta_key'] = 'andw_news_pinned';
-            $query_args['orderby'] = ['meta_value_num' => 'DESC', 'date' => 'DESC'];
         } else {
             $query_args['orderby'] = 'date';
             $query_args['order'] = 'DESC';
@@ -143,7 +159,8 @@ class ANDW_News_Query_Handler {
             'thumbnail' => $this->get_post_thumbnail($post_id),
             'link_url' => $this->get_post_link_url($post_id),
             'link_target' => $this->get_post_link_target($post_id),
-            'event_date' => $this->get_event_date($post_id)
+            'event_date' => $this->get_event_date($post_id),
+            'pinned' => $this->is_post_pinned($post_id)
         ];
 
         // SCFフィールドを動的に追加
@@ -339,5 +356,16 @@ class ANDW_News_Query_Handler {
         }
 
         return $custom_fields;
+    }
+
+    /**
+     * 投稿がピン留めされているかチェック
+     *
+     * @param int $post_id 投稿ID
+     * @return bool ピン留め状態
+     */
+    private function is_post_pinned($post_id) {
+        $pinned = get_post_meta($post_id, 'andw_news_pinned', true);
+        return $pinned === '1' || $pinned === 1;
     }
 }

@@ -39,9 +39,12 @@ class ANDW_News_Template_Manager {
             'list' => [
                 'name' => 'リスト',
                 'html' => '<div class="andw-news-list">
-                    <article class="andw-news-item">
+                    <article class="andw-news-item{if pinned} andw-news-item--pinned{/if}">
                         <div class="andw-news-content">
-                            <time class="andw-news-date">{date}</time>
+                            <div class="andw-news-meta">
+                                <time class="andw-news-date">{date}</time>
+                                {if pinned}<span class="andw-news-pinned-badge">ピン留め</span>{/if}
+                            </div>
                             <h3 class="andw-news-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                             <div class="andw-news-excerpt">{excerpt}</div>
                         </div>
@@ -52,10 +55,13 @@ class ANDW_News_Template_Manager {
             'cards' => [
                 'name' => 'カード',
                 'html' => '<div class="andw-news-cards">
-                    <div class="andw-news-card">
+                    <div class="andw-news-card{if pinned} andw-news-card--pinned{/if}">
                         <div class="andw-news-card-thumbnail">{thumbnail}</div>
                         <div class="andw-news-card-content">
-                            <time class="andw-news-card-date">{date}</time>
+                            <div class="andw-news-card-meta">
+                                <time class="andw-news-card-date">{date}</time>
+                                {if pinned}<span class="andw-news-pinned-badge">ピン留め</span>{/if}
+                            </div>
                             <h3 class="andw-news-card-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                             <div class="andw-news-card-excerpt">{excerpt}</div>
                             {event_date}
@@ -67,9 +73,10 @@ class ANDW_News_Template_Manager {
             'tabs' => [
                 'name' => 'タブ',
                 'html' => '<div class="andw-news-tab-content">
-                    <article class="andw-news-tab-item">
+                    <article class="andw-news-tab-item{if pinned} andw-news-tab-item--pinned{/if}">
                         <div class="andw-news-tab-meta">
                             <time class="andw-news-tab-date">{date}</time>
+                            {if pinned}<span class="andw-news-pinned-badge">ピン留め</span>{/if}
                             {event_date}
                         </div>
                         <h3 class="andw-news-tab-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
@@ -275,6 +282,8 @@ class ANDW_News_Template_Manager {
             '{event_date}' => $data['event_date'] ?? '',
             '{link_url}' => $data['link_url'] ?? '',
             '{link_target}' => $data['link_target'] ?? '_self',
+            '{pinned}' => $data['pinned'] ?? false,
+            '{andw_news_pinned}' => isset($data['andw_news_pinned']) ? $data['andw_news_pinned'] : ($data['pinned'] ? '1' : '0'),
         ];
 
         // 動的にSCFフィールドのトークンを追加
