@@ -16,7 +16,7 @@
         description: __('andw-news投稿タイプの記事一覧を表示します', 'andw-news-changer'),
         category: 'widgets',
         icon: 'admin-page',
-        keywords: [__('news'), __('list'), __('andw')],
+        keywords: [__('news', 'andw-news-changer'), __('list', 'andw-news-changer'), __('andw', 'andw-news-changer')],
 
         attributes: {
             layout: {

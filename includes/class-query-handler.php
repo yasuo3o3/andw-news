@@ -97,6 +97,11 @@ class ANDW_News_Query_Handler {
             'hide_empty' => true
         ]);
 
+        // エラーチェック
+        if (is_wp_error($categories) || empty($categories)) {
+            return [];
+        }
+
         $categorized_posts = [];
 
         foreach ($categories as $category) {

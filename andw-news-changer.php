@@ -33,15 +33,15 @@ function andw_news_init() {
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-admin.php';
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-gutenberg-block.php';
 
+    // 翻訳ファイルを読み込み
+    load_plugin_textdomain('andw-news-changer', false, dirname(plugin_basename(__FILE__)) . '/languages');
+
     // 各クラスを初期化
     new ANDW_News_Template_Manager();
     new ANDW_News_Query_Handler();
     new ANDW_News_Shortcode();
     new ANDW_News_Admin();
     new ANDW_News_Gutenberg_Block();
-
-    // CSS/JSを登録
-    andw_news_register_assets();
 }
 add_action('init', 'andw_news_init');
 

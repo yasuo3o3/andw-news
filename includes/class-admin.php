@@ -217,7 +217,7 @@ class ANDW_News_Admin {
             'title' => 'サンプルニュースタイトル',
             'date' => '2024.01.15',
             'excerpt' => 'これはサンプルのニュース記事です。実際の投稿データに置き換わります。',
-            'thumbnail' => '<img src="' . esc_url(ANDW_NEWS_PLUGIN_URL . 'assets/sample-thumbnail.png') . '" alt="サンプル画像" class="andw-news-thumbnail" style="width:100px;height:80px;background:#ddd;display:block;">',
+            'thumbnail' => $this->get_sample_thumbnail(),
             'event_date' => '<span class="andw-event-date">2024.01.20</span>',
             'link_url' => '#',
             'link_target' => '_self'
@@ -346,6 +346,22 @@ class ANDW_News_Admin {
             wp_send_json_success(['message' => 'Template deleted successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to delete template']);
+        }
+    }
+
+    /**
+     * サンプル画像HTMLを取得
+     *
+     * @return string サンプル画像HTML
+     */
+    private function get_sample_thumbnail() {
+        $sample_image_path = ANDW_NEWS_PLUGIN_DIR . 'assets/sample-thumbnail.png';
+
+        if (file_exists($sample_image_path)) {
+            return '<img src="' . esc_url(ANDW_NEWS_PLUGIN_URL . 'assets/sample-thumbnail.png') . '" alt="サンプル画像" class="andw-news-thumbnail" style="width:100px;height:80px;object-fit:cover;">';
+        } else {
+            // フォールバック: CSS背景のプレースホルダー
+            return '<div class="andw-news-thumbnail" style="width:100px;height:80px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">サンプル画像</div>';
         }
     }
 
