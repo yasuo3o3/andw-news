@@ -150,7 +150,8 @@
                                 <td>
                                     <textarea id="template-html" class="large-text code" rows="15" required>${templateData.html}</textarea>
                                     <p class="description">
-                                        使用可能なトークン: {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}, {andw_subcontents}, {andw_link_type}等のSCFフィールド
+                                        <strong>基本トークン:</strong> {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}<br>
+                                        <strong>SCFフィールド:</strong> {andw_news_pinned}, {andw_link_type}, {andw_internal_link}, {andw_external_link}, {andw_link_target}, {andw_event_type}, {andw_event_single_date}, {andw_event_start_date}, {andw_event_end_date}, {andw_event_free_text}, {andw_subcontents} 等
                                     </p>
                                 </td>
                             </tr>

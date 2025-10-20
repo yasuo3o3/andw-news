@@ -44,7 +44,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 プラグインの管理画面「お知らせチェンジャー設定」から、HTMLテンプレートを自由に編集できます。
 
-**利用可能なトークン:**
+**基本トークン:**
 * `{title}` - 記事タイトル
 * `{date}` - 投稿日
 * `{excerpt}` - 抜粋
@@ -52,8 +52,19 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 * `{event_date}` - イベント日付（SCFフィールド）
 * `{link_url}` - リンクURL
 * `{link_target}` - リンクターゲット
-* `{andw_subcontents}` - サブコンテンツ（SCFフィールド）
-* `{andw_link_type}` - リンクタイプ（SCFフィールド）
+
+**SCFフィールドトークン:**
+* `{andw_news_pinned}` - ピン留め設定
+* `{andw_link_type}` - リンクタイプ（self/internal/external）
+* `{andw_internal_link}` - 内部リンク投稿ID
+* `{andw_external_link}` - 外部リンクURL
+* `{andw_link_target}` - リンクターゲット
+* `{andw_event_type}` - イベントタイプ
+* `{andw_event_single_date}` - 単一イベント日付
+* `{andw_event_start_date}` - イベント開始日
+* `{andw_event_end_date}` - イベント終了日
+* `{andw_event_free_text}` - イベントフリーテキスト
+* `{andw_subcontents}` - サブコンテンツ
 * その他の`andw_`または`andw-`プレフィックスのSCFフィールド
 
 = CSS上書き =
