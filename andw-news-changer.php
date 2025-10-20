@@ -41,6 +41,11 @@ function andw_news_init() {
         require_once ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php';
     }
 
+    // SCFデバッグツール（管理画面でのみ）
+    if (is_admin() && file_exists(ANDW_NEWS_PLUGIN_DIR . 'debug-tools/scf-debug.php')) {
+        require_once ANDW_NEWS_PLUGIN_DIR . 'debug-tools/scf-debug.php';
+    }
+
     // 各クラスを初期化
     new ANDW_News_Template_Manager();
     new ANDW_News_Query_Handler();
