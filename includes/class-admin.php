@@ -202,8 +202,8 @@ class ANDW_News_Admin {
     public function ajax_preview_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $template_name = sanitize_text_field($_POST['template_name'] ?? '');
@@ -241,8 +241,8 @@ class ANDW_News_Admin {
     public function ajax_save_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $template_name = sanitize_text_field($_POST['template_name'] ?? '');
@@ -276,8 +276,8 @@ class ANDW_News_Admin {
     public function ajax_get_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $template_name = sanitize_text_field($_POST['template_name'] ?? '');
@@ -302,8 +302,8 @@ class ANDW_News_Admin {
     public function ajax_duplicate_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $source_name = sanitize_text_field($_POST['source_name'] ?? '');
@@ -329,8 +329,8 @@ class ANDW_News_Admin {
     public function ajax_delete_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $template_name = sanitize_text_field($_POST['template_name'] ?? '');
@@ -355,8 +355,8 @@ class ANDW_News_Admin {
     public function ajax_set_default_template() {
         check_ajax_referer('andw_news_admin', 'nonce');
 
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied']);
+        if (!current_user_can('manage_options') || !current_user_can('edit_theme_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
         $template_name = sanitize_text_field($_POST['template_name'] ?? '');

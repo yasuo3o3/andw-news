@@ -111,9 +111,25 @@ function andw_news_register_assets() {
     }
 
     // タブ用JavaScript（tabs使用時のみ）
-    global $post;
-    if ((is_object($post) && (has_block('andw-news-changer/news-list', $post) || has_shortcode($post->post_content, 'andw_news'))) ||
-        is_admin()) {
+    $should_load_tabs = false;
+
+    // 管理画面では常に読み込み
+    if (is_admin()) {
+        $should_load_tabs = true;
+    }
+    // 単一投稿ページでショートコードまたはブロックを使用している場合
+    elseif (is_singular()) {
+        $post_id = get_the_ID();
+        if ($post_id) {
+            $content = get_post_field('post_content', $post_id);
+            if ($content) {
+                $should_load_tabs = has_block('andw-news-changer/news-list', $content) ||
+                                  has_shortcode($content, 'andw_news');
+            }
+        }
+    }
+
+    if ($should_load_tabs) {
         wp_enqueue_script(
             'andw-news-tabs',
             ANDW_NEWS_PLUGIN_URL . 'assets/js/tabs.js',
