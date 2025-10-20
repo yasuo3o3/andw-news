@@ -338,19 +338,44 @@ class ANDW_News_Query_Handler {
     private function get_custom_fields($post_id) {
         $custom_fields = [];
 
-        // andwプレフィックスのカスタムフィールドを取得
-        $all_meta = get_post_meta($post_id);
+        // 明示的にチェックするandwフィールドのリスト
+        $expected_fields = [
+            'andw_news_pinned',
+            'andw_link_type',
+            'andw_internal_link',
+            'andw_external_link',
+            'andw_link_target',
+            'andw_event_type',
+            'andw_event_single_date',
+            'andw_event_start_date',
+            'andw_event_end_date',
+            'andw_event_free_text',
+            'andw_subcontents'
+        ];
 
+        // 明示的フィールドを最初に処理
+        foreach ($expected_fields as $field_key) {
+            $field_value = get_post_meta($post_id, $field_key, true);
+
+            // SCFプラグインが有効な場合は SCF::get() も試す
+            if (empty($field_value) && class_exists('SCF') && method_exists('SCF', 'get')) {
+                $field_value = SCF::get($field_key, $post_id);
+            }
+
+            // 空でも配列に含める（テンプレートトークン置換のため）
+            $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
+        }
+
+        // その他のandwプレフィックスフィールドも取得
+        $all_meta = get_post_meta($post_id);
         if (is_array($all_meta)) {
             foreach ($all_meta as $meta_key => $meta_values) {
-                // andwプレフィックスのフィールドのみ処理
-                if (strpos($meta_key, 'andw_') === 0 || strpos($meta_key, 'andw-') === 0) {
-                    $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
+                // 未処理のandwプレフィックスフィールドのみ処理
+                if ((strpos($meta_key, 'andw_') === 0 || strpos($meta_key, 'andw-') === 0)
+                    && !isset($custom_fields[$meta_key])) {
 
-                    // 値をサニタイズ
-                    if (!empty($field_value)) {
-                        $custom_fields[$meta_key] = esc_html($field_value);
-                    }
+                    $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
+                    $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
                 }
             }
         }
