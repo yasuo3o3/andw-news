@@ -31,6 +31,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 **利用可能な属性:**
 * `layout` - テンプレート名（list, cards, tabs, tabs_by_category等）
+  ※複製したテンプレートの場合は管理画面で確認できる内部キー（[...]内の文字列）を指定
 * `cats` - カテゴリID（カンマ区切り）
 * `per_page` - 表示件数
 * `pinned_first` - ピン留め優先表示（1 or 0）

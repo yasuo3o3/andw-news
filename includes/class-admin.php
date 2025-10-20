@@ -78,6 +78,7 @@ class ANDW_News_Admin {
                                                 <?php if ($key === $default_template): ?>
                                                     (<?php echo esc_html__('デフォルト', 'andw-news-changer'); ?>)
                                                 <?php endif; ?>
+                                                [<?php echo esc_html($key); ?>]
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
