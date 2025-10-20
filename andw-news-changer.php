@@ -36,6 +36,11 @@ function andw_news_init() {
     // 翻訳ファイルを読み込み
     load_plugin_textdomain('andw-news-changer', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
+    // デバッグ機能（WP_DEBUGが有効な場合のみ）
+    if (defined('WP_DEBUG') && WP_DEBUG && file_exists(ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php')) {
+        require_once ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php';
+    }
+
     // 各クラスを初期化
     new ANDW_News_Template_Manager();
     new ANDW_News_Query_Handler();

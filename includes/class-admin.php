@@ -52,11 +52,15 @@ class ANDW_News_Admin {
         $default_template = $template_manager->get_default_template();
         $disable_css = get_option('andw_news_disable_css', false);
 
+        // 重複テンプレート検出
+        $duplicates = $this->detect_duplicate_templates($templates);
+
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('お知らせ設定', 'andw-news-changer'); ?></h1>
 
             <?php $this->show_admin_notices(); ?>
+            <?php $this->show_duplicate_warnings($duplicates); ?>
 
             <div style="display: flex; gap: 20px; margin-top: 20px;">
                 <!-- 左側: テンプレート管理 -->
@@ -388,6 +392,58 @@ class ANDW_News_Admin {
             wp_send_json_success(['message' => 'Default template set successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to set default template']);
+        }
+    }
+
+    /**
+     * 重複テンプレートを検出
+     *
+     * @param array $templates テンプレート配列
+     * @return array 重複している表示名の配列
+     */
+    private function detect_duplicate_templates($templates) {
+        $name_count = [];
+        $duplicates = [];
+
+        foreach ($templates as $key => $template) {
+            $name = $template['name'];
+            if (!isset($name_count[$name])) {
+                $name_count[$name] = [];
+            }
+            $name_count[$name][] = $key;
+        }
+
+        foreach ($name_count as $name => $keys) {
+            if (count($keys) > 1) {
+                $duplicates[] = [
+                    'name' => $name,
+                    'keys' => $keys
+                ];
+            }
+        }
+
+        return $duplicates;
+    }
+
+    /**
+     * 重複警告を表示
+     *
+     * @param array $duplicates 重複テンプレート配列
+     */
+    private function show_duplicate_warnings($duplicates) {
+        if (empty($duplicates)) {
+            return;
+        }
+
+        foreach ($duplicates as $duplicate) {
+            echo '<div class="notice notice-warning is-dismissible">';
+            echo '<p><strong>' . esc_html__('重複テンプレート警告', 'andw-news-changer') . ':</strong> ';
+            echo sprintf(
+                esc_html__('「%s」という名前のテンプレートが複数存在します（キー: %s）。混乱を避けるため、不要なテンプレートを削除することをお勧めします。', 'andw-news-changer'),
+                esc_html($duplicate['name']),
+                esc_html(implode(', ', $duplicate['keys']))
+            );
+            echo '</p></div>';
         }
     }
 }

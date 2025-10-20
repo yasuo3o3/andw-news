@@ -67,6 +67,30 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 * `{andw_subcontents}` - サブコンテンツ
 * その他の`andw_`または`andw-`プレフィックスのSCFフィールド
 
+**条件分岐構文:**
+* `{if field_name}内容{/if}` - フィールドに値がある場合に表示
+* `{ifnot field_name}内容{/ifnot}` - フィールドが空の場合に表示
+* `{if field_name="value"}内容{/if}` - フィールドが特定の値の場合に表示
+* `{if field_name!="value"}内容{/if}` - フィールドが特定の値でない場合に表示
+* `{if field_name}真の内容{else}偽の内容{/if}` - if-else構文
+
+**条件分岐の使用例:**
+```html
+{if andw_link_type="external"}
+    <span class="external-link">外部リンク</span>
+{/if}
+
+{if andw_event_date}
+    <div class="event-info">{event_date}</div>
+{else}
+    <div class="no-event">イベント日程なし</div>
+{/if}
+
+{ifnot thumbnail}
+    <div class="no-image">画像なし</div>
+{/ifnot}
+```
+
 = CSS上書き =
 
 テーマの以下のパスにCSSファイルを配置すると、プラグインのデフォルトCSSを上書きできます：

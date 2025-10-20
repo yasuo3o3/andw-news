@@ -190,27 +190,70 @@ class ANDW_News_Query_Handler {
         // SCFフィールドを確認
         $link_type = get_post_meta($post_id, 'andw_link_type', true);
 
+        // デバッグ情報（開発環境のみ）
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("ANDW News Debug - Post ID: {$post_id}, Link Type: '{$link_type}'");
+        }
+
         switch ($link_type) {
             case 'internal':
                 $internal_link = get_post_meta($post_id, 'andw_internal_link', true);
-                if ($internal_link) {
-                    return esc_url(get_permalink($internal_link));
+
+                // デバッグ情報
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("ANDW News Debug - Internal Link ID: '{$internal_link}'");
+                }
+
+                if (!empty($internal_link) && is_numeric($internal_link)) {
+                    $internal_url = get_permalink($internal_link);
+
+                    // デバッグ情報
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("ANDW News Debug - Internal URL: '{$internal_url}'");
+                    }
+
+                    // 有効なURLが取得できた場合のみ返す
+                    if ($internal_url && $internal_url !== false) {
+                        return esc_url($internal_url);
+                    }
+                }
+
+                // 内部リンクが無効な場合は自身のページへのフォールバック
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("ANDW News Debug - Internal link failed, falling back to self");
                 }
                 break;
 
             case 'external':
                 $external_link = get_post_meta($post_id, 'andw_external_link', true);
-                if ($external_link) {
+
+                // デバッグ情報
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("ANDW News Debug - External Link: '{$external_link}'");
+                }
+
+                if (!empty($external_link)) {
                     return esc_url($external_link);
                 }
                 break;
 
+            case 'self':
             default:
                 // selfまたは未設定の場合は投稿自体のURL
-                return esc_url(get_permalink($post_id));
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("ANDW News Debug - Using self URL");
+                }
+                break;
         }
 
-        return esc_url(get_permalink($post_id));
+        $self_url = get_permalink($post_id);
+
+        // デバッグ情報
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("ANDW News Debug - Final URL: '{$self_url}'");
+        }
+
+        return esc_url($self_url);
     }
 
     /**

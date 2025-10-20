@@ -264,6 +264,9 @@ class ANDW_News_Template_Manager {
      * @return string 置換後のHTML
      */
     public function replace_tokens($html, $data) {
+        // 条件分岐を先に処理
+        $html = $this->process_conditionals($html, $data);
+
         $tokens = [
             '{title}' => $data['title'] ?? '',
             '{date}' => $data['date'] ?? '',
@@ -285,5 +288,95 @@ class ANDW_News_Template_Manager {
         }
 
         return str_replace(array_keys($tokens), array_values($tokens), $html);
+    }
+
+    /**
+     * 条件分岐を処理
+     *
+     * @param string $html HTMLテンプレート
+     * @param array $data データ配列
+     * @return string 処理後のHTML
+     */
+    private function process_conditionals($html, $data) {
+        // {if field_name}content{/if} 形式の条件分岐を処理
+        $pattern = '/\{if\s+([^}]+)\}(.*?)\{\/if\}/s';
+
+        $html = preg_replace_callback($pattern, function($matches) use ($data) {
+            $condition = trim($matches[1]);
+            $content = $matches[2];
+
+            // 条件を評価
+            if ($this->evaluate_condition($condition, $data)) {
+                return $content;
+            } else {
+                return '';
+            }
+        }, $html);
+
+        // {ifnot field_name}content{/ifnot} 形式の否定条件を処理
+        $pattern_not = '/\{ifnot\s+([^}]+)\}(.*?)\{\/ifnot\}/s';
+
+        $html = preg_replace_callback($pattern_not, function($matches) use ($data) {
+            $condition = trim($matches[1]);
+            $content = $matches[2];
+
+            // 条件を評価（否定）
+            if (!$this->evaluate_condition($condition, $data)) {
+                return $content;
+            } else {
+                return '';
+            }
+        }, $html);
+
+        // {if field_name}content{else}content{/if} 形式のif-else処理
+        $pattern_else = '/\{if\s+([^}]+)\}(.*?)\{else\}(.*?)\{\/if\}/s';
+
+        $html = preg_replace_callback($pattern_else, function($matches) use ($data) {
+            $condition = trim($matches[1]);
+            $true_content = $matches[2];
+            $false_content = $matches[3];
+
+            // 条件を評価
+            if ($this->evaluate_condition($condition, $data)) {
+                return $true_content;
+            } else {
+                return $false_content;
+            }
+        }, $html);
+
+        return $html;
+    }
+
+    /**
+     * 条件を評価
+     *
+     * @param string $condition 条件文字列
+     * @param array $data データ配列
+     * @return bool 条件の結果
+     */
+    private function evaluate_condition($condition, $data) {
+        // 等値比較: field_name="value"
+        if (preg_match('/^([^=]+)=["\'](.*?)["\']$/', $condition, $matches)) {
+            $field = trim($matches[1]);
+            $expected_value = $matches[2];
+            $actual_value = $data[$field] ?? '';
+
+            return $actual_value === $expected_value;
+        }
+
+        // 不等比較: field_name!="value"
+        if (preg_match('/^([^!]+)!=["\'](.*?)["\']$/', $condition, $matches)) {
+            $field = trim($matches[1]);
+            $expected_value = $matches[2];
+            $actual_value = $data[$field] ?? '';
+
+            return $actual_value !== $expected_value;
+        }
+
+        // 存在チェック: field_name（値が空でない）
+        $field = trim($condition);
+        $value = $data[$field] ?? '';
+
+        return !empty($value);
     }
 }
