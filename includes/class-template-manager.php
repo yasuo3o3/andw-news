@@ -283,7 +283,7 @@ class ANDW_News_Template_Manager {
             '{link_url}' => $data['link_url'] ?? '',
             '{link_target}' => $data['link_target'] ?? '_self',
             '{pinned}' => $data['pinned'] ?? false,
-            '{andw_news_pinned}' => isset($data['andw_news_pinned']) ? $data['andw_news_pinned'] : ($data['pinned'] ? '1' : '0'),
+            '{andw-news-pinned}' => isset($data['andw-news-pinned']) ? $data['andw-news-pinned'] : ($data['pinned'] ? '1' : '0'),
         ];
 
         // 動的にSCFフィールドのトークンを追加
