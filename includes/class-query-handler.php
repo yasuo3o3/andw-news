@@ -179,7 +179,7 @@ class ANDW_News_Query_Handler {
         $excerpt = get_the_excerpt($post_id);
         if (empty($excerpt)) {
             $content = get_post_field('post_content', $post_id);
-            $excerpt = wp_trim_words(strip_tags($content), 20, '...');
+            $excerpt = wp_trim_words(wp_strip_all_tags($content), 20, '...');
         }
         return esc_html($excerpt);
     }
