@@ -36,6 +36,7 @@ class ANDW_News_Query_Handler {
         $args = wp_parse_args($args, $defaults);
 
         // WP_Queryの引数を構築
+        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for conditional meta filtering
         $query_args = [
             'post_type' => 'andw-news',
             'posts_per_page' => intval($args['per_page']),
@@ -45,6 +46,7 @@ class ANDW_News_Query_Handler {
 
         // カテゴリ指定がある場合
         if (!empty($args['cats']) && is_array($args['cats'])) {
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for category filtering
             $query_args['tax_query'] = [
                 [
                     'taxonomy' => 'andw_news_category',
@@ -75,6 +77,7 @@ class ANDW_News_Query_Handler {
                 'meta_value_num' => 'DESC',
                 'date' => 'DESC'
             ];
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for pinned post ordering
             $query_args['meta_key'] = 'andw-news-pinned';
         } else {
             $query_args['orderby'] = 'date';
@@ -225,18 +228,11 @@ class ANDW_News_Query_Handler {
                 }
 
                 // 内部リンクが無効な場合は自身のページへのフォールバック
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Internal link failed, falling back to self");
-                }
                 break;
 
             case 'external':
                 $external_link = get_post_meta($post_id, 'andw-external-link', true);
 
-                // デバッグ情報
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - External Link: '{$external_link}'");
-                }
 
                 if (!empty($external_link)) {
                     return esc_url($external_link);
@@ -246,18 +242,11 @@ class ANDW_News_Query_Handler {
             case 'self':
             default:
                 // selfまたは未設定の場合は投稿自体のURL
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Using self URL");
-                }
                 break;
         }
 
         $self_url = get_permalink($post_id);
 
-        // デバッグ情報
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("ANDW News Debug - Final URL: '{$self_url}'");
-        }
 
         return esc_url($self_url);
     }

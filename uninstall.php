@@ -30,6 +30,7 @@ function andw_news_uninstall_cleanup() {
     global $wpdb;
 
     // andw_news_ で始まるTransientsを削除
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WordPress API alternative for bulk transient cleanup
     $wpdb->query($wpdb->prepare(
         "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
         '_transient_andw_news_%',
@@ -38,6 +39,7 @@ function andw_news_uninstall_cleanup() {
 
     // マルチサイトの場合はsite_optionsも削除
     if (is_multisite()) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WordPress API alternative for bulk site transient cleanup
         $wpdb->query($wpdb->prepare(
             "DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE %s OR meta_key LIKE %s",
             '_site_transient_andw_news_%',

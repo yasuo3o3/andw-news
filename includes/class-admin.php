@@ -190,7 +190,7 @@ class ANDW_News_Admin {
         }
 
         // CSS設定の保存
-        if (isset($_POST['save_css_settings']) && isset($_POST['andw_news_css_nonce']) && wp_verify_nonce($_POST['andw_news_css_nonce'], 'andw_news_css_settings')) {
+        if (isset($_POST['save_css_settings']) && isset($_POST['andw_news_css_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['andw_news_css_nonce'])), 'andw_news_css_settings')) {
             $disable_css = !empty($_POST['disable_css']);
             update_option('andw_news_disable_css', $disable_css);
 
@@ -218,7 +218,7 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field($_POST['template_name'] ?? '');
+        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
 
         if (empty($template_name)) {
             wp_send_json_error(['message' => 'Template name is required']);
@@ -292,7 +292,7 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field($_POST['template_name'] ?? '');
+        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
 
         if (empty($template_name)) {
             wp_send_json_error(['message' => 'Template name is required']);
@@ -542,7 +542,7 @@ class ANDW_News_Admin {
             wp_send_json_error(__('権限がありません。', 'andw-news'));
         }
 
-        $post_id = isset($_POST['post_id']) && !empty($_POST['post_id']) ? intval($_POST['post_id']) : null;
+        $post_id = isset($_POST['post_id']) && !empty($_POST['post_id']) ? intval(wp_unslash($_POST['post_id'])) : null;
 
         try {
             $debug_info = $this->debug_scf_fields($post_id);
