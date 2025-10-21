@@ -604,7 +604,7 @@ class ANDW_News_Admin {
                 'value' => $value,
                 'type' => gettype($value),
                 'empty' => empty($value),
-                'raw_value' => var_export($value, true)
+                'raw_value' => wp_json_encode($value)
             ];
         }
 
