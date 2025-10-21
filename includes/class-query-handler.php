@@ -303,7 +303,7 @@ class ANDW_News_Query_Handler {
             case 'single':
                 $single_date = get_post_meta($post_id, 'andw-event-single-date', true);
                 if ($single_date) {
-                    $formatted_date = date('Y.m.d', strtotime($single_date));
+                    $formatted_date = wp_date('Y.m.d', strtotime($single_date));
                     $event_html = '<span class="andw-event-date">' . esc_html($formatted_date) . '</span>';
                 }
                 break;
@@ -312,8 +312,8 @@ class ANDW_News_Query_Handler {
                 $start_date = get_post_meta($post_id, 'andw-event-start-date', true);
                 $end_date = get_post_meta($post_id, 'andw-event-end-date', true);
                 if ($start_date && $end_date) {
-                    $formatted_start = date('Y.m.d', strtotime($start_date));
-                    $formatted_end = date('Y.m.d', strtotime($end_date));
+                    $formatted_start = wp_date('Y.m.d', strtotime($start_date));
+                    $formatted_end = wp_date('Y.m.d', strtotime($end_date));
                     $event_html = '<span class="andw-event-period">' . esc_html($formatted_start . ' - ' . $formatted_end) . '</span>';
                 }
                 break;
