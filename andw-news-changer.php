@@ -6,7 +6,7 @@
  * Author: yasuo3o3
  * Author URI: https://yasuo-o.xyz/
  * License: GPLv2 or later
- * Text Domain: andw-news-changer
+ * Text Domain: andw-news
  * Requires at least: 6.5
  * Requires PHP: 7.4
  */
