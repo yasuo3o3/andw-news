@@ -45,7 +45,7 @@ class ANDW_News_Admin {
     public function admin_page() {
         // nonceチェック
         if (!current_user_can('manage_options')) {
-            wp_die(__('このページにアクセスする権限がありません。', 'andw-news'));
+            wp_die(esc_html__('このページにアクセスする権限がありません。', 'andw-news'));
         }
 
         $template_manager = new ANDW_News_Template_Manager();
@@ -498,7 +498,7 @@ class ANDW_News_Admin {
                 var formData = new FormData();
                 formData.append('action', 'andw_news_scf_debug');
                 formData.append('post_id', postId);
-                formData.append('nonce', '<?php echo wp_create_nonce('andw_news_scf_debug'); ?>');
+                formData.append('nonce', '<?php echo esc_js(wp_create_nonce('andw_news_scf_debug')); ?>');
 
                 fetch(ajaxurl, {
                     method: 'POST',
