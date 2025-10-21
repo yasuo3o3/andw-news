@@ -257,10 +257,10 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field($_POST['template_name'] ?? '');
-        $template_data = $_POST['template_data'] ?? [];
+        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
+        $template_data = wp_unslash($_POST['template_data'] ?? []);
         $is_edit = !empty($_POST['is_edit']);
-        $original_name = sanitize_text_field($_POST['original_name'] ?? '');
+        $original_name = sanitize_text_field(wp_unslash($_POST['original_name'] ?? ''));
 
         if (empty($template_name) || empty($template_data)) {
             wp_send_json_error(['message' => 'Required fields are missing']);
@@ -318,9 +318,9 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $source_name = sanitize_text_field($_POST['source_name'] ?? '');
-        $new_name = sanitize_text_field($_POST['new_name'] ?? '');
-        $display_name = sanitize_text_field($_POST['display_name'] ?? '');
+        $source_name = sanitize_text_field(wp_unslash($_POST['source_name'] ?? ''));
+        $new_name = sanitize_text_field(wp_unslash($_POST['new_name'] ?? ''));
+        $display_name = sanitize_text_field(wp_unslash($_POST['display_name'] ?? ''));
 
         if (empty($source_name) || empty($new_name)) {
             wp_send_json_error(['message' => 'Source and new template names are required']);
@@ -346,7 +346,7 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field($_POST['template_name'] ?? '');
+        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
 
         if (empty($template_name)) {
             wp_send_json_error(['message' => 'Template name is required']);
@@ -388,7 +388,7 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field($_POST['template_name'] ?? '');
+        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
 
         if (empty($template_name)) {
             wp_send_json_error(['message' => 'Template name is required']);
