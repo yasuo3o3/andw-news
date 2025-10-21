@@ -36,11 +36,11 @@ class ANDW_News_Query_Handler {
         $args = wp_parse_args($args, $defaults);
 
         // WP_Queryの引数を構築
-        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for conditional meta filtering
         $query_args = [
             'post_type' => 'andw-news',
             'posts_per_page' => intval($args['per_page']),
             'post_status' => 'publish',
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for conditional meta filtering
             'meta_query' => []
         ];
 
