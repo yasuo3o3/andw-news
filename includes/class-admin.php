@@ -564,7 +564,7 @@ class ANDW_News_Admin {
             ]);
 
             if (empty($posts)) {
-                throw new Exception(__('andw-news投稿が見つかりません', 'andw-news'));
+                throw new Exception(esc_html__('andw-news投稿が見つかりません', 'andw-news'));
             }
 
             $post_id = $posts[0]->ID;
