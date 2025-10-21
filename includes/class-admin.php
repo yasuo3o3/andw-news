@@ -258,7 +258,7 @@ class ANDW_News_Admin {
         }
 
         $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
-        $template_data = wp_unslash($_POST['template_data'] ?? []);
+        $template_data = array_map('sanitize_textarea_field', wp_unslash($_POST['template_data'] ?? []));
         $is_edit = !empty($_POST['is_edit']);
         $original_name = sanitize_text_field(wp_unslash($_POST['original_name'] ?? ''));
 
@@ -532,7 +532,7 @@ class ANDW_News_Admin {
      */
     public function ajax_scf_debug() {
         // nonce検証
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'andw_news_scf_debug')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'andw_news_scf_debug')) {
             wp_send_json_error(__('不正なリクエストです。', 'andw-news'));
             return;
         }
