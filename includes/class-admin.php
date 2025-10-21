@@ -190,7 +190,7 @@ class ANDW_News_Admin {
         }
 
         // CSS設定の保存
-        if (isset($_POST['save_css_settings']) && wp_verify_nonce($_POST['andw_news_css_nonce'], 'andw_news_css_settings')) {
+        if (isset($_POST['save_css_settings']) && isset($_POST['andw_news_css_nonce']) && wp_verify_nonce($_POST['andw_news_css_nonce'], 'andw_news_css_settings')) {
             $disable_css = !empty($_POST['disable_css']);
             update_option('andw_news_disable_css', $disable_css);
 
@@ -532,8 +532,9 @@ class ANDW_News_Admin {
      */
     public function ajax_scf_debug() {
         // nonce検証
-        if (!wp_verify_nonce($_POST['nonce'], 'andw_news_scf_debug')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'andw_news_scf_debug')) {
             wp_send_json_error(__('不正なリクエストです。', 'andw-news'));
+            return;
         }
 
         // 権限チェック
