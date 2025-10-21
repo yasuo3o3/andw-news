@@ -447,6 +447,7 @@ class ANDW_News_Admin {
         foreach ($duplicates as $duplicate) {
             echo '<div class="notice notice-warning is-dismissible">';
             echo '<p><strong>' . esc_html__('重複テンプレート警告', 'andw-news') . ':</strong> ';
+            // translators: %1$s is template name, %2$s is comma-separated keys.
             echo sprintf(
                 esc_html__('「%s」という名前のテンプレートが複数存在します（キー: %s）。混乱を避けるため、不要なテンプレートを削除することをお勧めします。', 'andw-news'),
                 esc_html($duplicate['name']),
