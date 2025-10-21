@@ -58,6 +58,7 @@ class ANDW_News_Query_Handler {
         // ピン留め優先の場合
         if ($args['pinned_first']) {
             // ピン留めフィールドでソート（ピン留め投稿を優先、その後日付順）
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needs meta fallback for pinned order
             $query_args['meta_query'][] = [
                 'relation' => 'OR',
                 [
@@ -207,27 +208,15 @@ class ANDW_News_Query_Handler {
         // SCFフィールドを確認
         $link_type = get_post_meta($post_id, 'andw-link-type', true);
 
-        // デバッグ情報（開発環境のみ）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("ANDW News Debug - Post ID: {$post_id}, Link Type: '{$link_type}'");
-        }
 
         switch ($link_type) {
             case 'internal':
                 $internal_link = get_post_meta($post_id, 'andw-internal-link', true);
 
-                // デバッグ情報
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Internal Link ID: '{$internal_link}'");
-                }
 
                 if (!empty($internal_link) && is_numeric($internal_link)) {
                     $internal_url = get_permalink($internal_link);
 
-                    // デバッグ情報
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("ANDW News Debug - Internal URL: '{$internal_url}'");
-                    }
 
                     // 有効なURLが取得できた場合のみ返す
                     if ($internal_url && $internal_url !== false) {
