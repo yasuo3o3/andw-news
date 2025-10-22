@@ -12,7 +12,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグインです。
+andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグイン
 
 = 主な機能 =
 
