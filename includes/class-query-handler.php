@@ -40,11 +40,13 @@ class ANDW_News_Query_Handler {
             'post_type' => 'andw-news',
             'posts_per_page' => intval($args['per_page']),
             'post_status' => 'publish',
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for conditional meta filtering
             'meta_query' => []
         ];
 
         // カテゴリ指定がある場合
         if (!empty($args['cats']) && is_array($args['cats'])) {
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for category filtering
             $query_args['tax_query'] = [
                 [
                     'taxonomy' => 'andw_news_category',
@@ -57,8 +59,26 @@ class ANDW_News_Query_Handler {
 
         // ピン留め優先の場合
         if ($args['pinned_first']) {
-            $query_args['meta_key'] = 'andw_news_pinned';
-            $query_args['orderby'] = ['meta_value_num' => 'DESC', 'date' => 'DESC'];
+            // ピン留めフィールドでソート（ピン留め投稿を優先、その後日付順）
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needs meta fallback for pinned order
+            $query_args['meta_query'][] = [
+                'relation' => 'OR',
+                [
+                    'key' => 'andw-news-pinned',
+                    'value' => '1',
+                    'compare' => '='
+                ],
+                [
+                    'key' => 'andw-news-pinned',
+                    'compare' => 'NOT EXISTS'
+                ]
+            ];
+            $query_args['orderby'] = [
+                'meta_value_num' => 'DESC',
+                'date' => 'DESC'
+            ];
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for pinned post ordering
+            $query_args['meta_key'] = 'andw-news-pinned';
         } else {
             $query_args['orderby'] = 'date';
             $query_args['order'] = 'DESC';
@@ -143,7 +163,8 @@ class ANDW_News_Query_Handler {
             'thumbnail' => $this->get_post_thumbnail($post_id),
             'link_url' => $this->get_post_link_url($post_id),
             'link_target' => $this->get_post_link_target($post_id),
-            'event_date' => $this->get_event_date($post_id)
+            'event_date' => $this->get_event_date($post_id),
+            'pinned' => $this->is_post_pinned($post_id)
         ];
 
         // SCFフィールドを動的に追加
@@ -162,7 +183,7 @@ class ANDW_News_Query_Handler {
         $excerpt = get_the_excerpt($post_id);
         if (empty($excerpt)) {
             $content = get_post_field('post_content', $post_id);
-            $excerpt = wp_trim_words(strip_tags($content), 20, '...');
+            $excerpt = wp_trim_words(wp_strip_all_tags($content), 20, '...');
         }
         return esc_html($excerpt);
     }
@@ -188,29 +209,17 @@ class ANDW_News_Query_Handler {
      */
     private function get_post_link_url($post_id) {
         // SCFフィールドを確認
-        $link_type = get_post_meta($post_id, 'andw_link_type', true);
+        $link_type = get_post_meta($post_id, 'andw-link-type', true);
 
-        // デバッグ情報（開発環境のみ）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("ANDW News Debug - Post ID: {$post_id}, Link Type: '{$link_type}'");
-        }
 
         switch ($link_type) {
             case 'internal':
-                $internal_link = get_post_meta($post_id, 'andw_internal_link', true);
+                $internal_link = get_post_meta($post_id, 'andw-internal-link', true);
 
-                // デバッグ情報
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Internal Link ID: '{$internal_link}'");
-                }
 
                 if (!empty($internal_link) && is_numeric($internal_link)) {
                     $internal_url = get_permalink($internal_link);
 
-                    // デバッグ情報
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("ANDW News Debug - Internal URL: '{$internal_url}'");
-                    }
 
                     // 有効なURLが取得できた場合のみ返す
                     if ($internal_url && $internal_url !== false) {
@@ -219,18 +228,11 @@ class ANDW_News_Query_Handler {
                 }
 
                 // 内部リンクが無効な場合は自身のページへのフォールバック
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Internal link failed, falling back to self");
-                }
                 break;
 
             case 'external':
-                $external_link = get_post_meta($post_id, 'andw_external_link', true);
+                $external_link = get_post_meta($post_id, 'andw-external-link', true);
 
-                // デバッグ情報
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - External Link: '{$external_link}'");
-                }
 
                 if (!empty($external_link)) {
                     return esc_url($external_link);
@@ -240,18 +242,11 @@ class ANDW_News_Query_Handler {
             case 'self':
             default:
                 // selfまたは未設定の場合は投稿自体のURL
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("ANDW News Debug - Using self URL");
-                }
                 break;
         }
 
         $self_url = get_permalink($post_id);
 
-        // デバッグ情報
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("ANDW News Debug - Final URL: '{$self_url}'");
-        }
 
         return esc_url($self_url);
     }
@@ -263,7 +258,7 @@ class ANDW_News_Query_Handler {
      * @return string リンクターゲット
      */
     private function get_post_link_target($post_id) {
-        $link_target = get_post_meta($post_id, 'andw_link_target', true);
+        $link_target = get_post_meta($post_id, 'andw-link-target', true);
         return esc_attr($link_target ?: '_self');
     }
 
@@ -274,7 +269,7 @@ class ANDW_News_Query_Handler {
      * @return string イベント日付HTML
      */
     private function get_event_date($post_id) {
-        $event_type = get_post_meta($post_id, 'andw_event_type', true);
+        $event_type = get_post_meta($post_id, 'andw-event-type', true);
 
         if (empty($event_type) || $event_type === 'none') {
             return '';
@@ -284,25 +279,25 @@ class ANDW_News_Query_Handler {
 
         switch ($event_type) {
             case 'single':
-                $single_date = get_post_meta($post_id, 'andw_event_single_date', true);
+                $single_date = get_post_meta($post_id, 'andw-event-single-date', true);
                 if ($single_date) {
-                    $formatted_date = date('Y.m.d', strtotime($single_date));
+                    $formatted_date = wp_date('Y.m.d', strtotime($single_date));
                     $event_html = '<span class="andw-event-date">' . esc_html($formatted_date) . '</span>';
                 }
                 break;
 
             case 'period':
-                $start_date = get_post_meta($post_id, 'andw_event_start_date', true);
-                $end_date = get_post_meta($post_id, 'andw_event_end_date', true);
+                $start_date = get_post_meta($post_id, 'andw-event-start-date', true);
+                $end_date = get_post_meta($post_id, 'andw-event-end-date', true);
                 if ($start_date && $end_date) {
-                    $formatted_start = date('Y.m.d', strtotime($start_date));
-                    $formatted_end = date('Y.m.d', strtotime($end_date));
+                    $formatted_start = wp_date('Y.m.d', strtotime($start_date));
+                    $formatted_end = wp_date('Y.m.d', strtotime($end_date));
                     $event_html = '<span class="andw-event-period">' . esc_html($formatted_start . ' - ' . $formatted_end) . '</span>';
                 }
                 break;
 
             case 'free-text':
-                $free_text = get_post_meta($post_id, 'andw_event_free_text', true);
+                $free_text = get_post_meta($post_id, 'andw-event-free-text', true);
                 if ($free_text) {
                     $event_html = '<span class="andw-event-text">' . esc_html($free_text) . '</span>';
                 }
@@ -321,23 +316,59 @@ class ANDW_News_Query_Handler {
     private function get_custom_fields($post_id) {
         $custom_fields = [];
 
-        // andwプレフィックスのカスタムフィールドを取得
-        $all_meta = get_post_meta($post_id);
+        // 明示的にチェックするandwフィールドのリスト
+        $expected_fields = [
+            'andw-news-pinned',
+            'andw-link-type',
+            'andw-internal-link',
+            'andw-external-link',
+            'andw-link-target',
+            'andw-event-type',
+            'andw-event-single-date',
+            'andw-event-start-date',
+            'andw-event-end-date',
+            'andw-event-free-text',
+            'andw-subcontents'
+        ];
 
+        // 明示的フィールドを最初に処理
+        foreach ($expected_fields as $field_key) {
+            $field_value = get_post_meta($post_id, $field_key, true);
+
+            // SCFプラグインが有効な場合は SCF::get() も試す
+            if (empty($field_value) && class_exists('SCF') && method_exists('SCF', 'get')) {
+                $field_value = SCF::get($field_key, $post_id);
+            }
+
+            // 空でも配列に含める（テンプレートトークン置換のため）
+            $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
+        }
+
+        // その他のandwプレフィックスフィールドも取得
+        $all_meta = get_post_meta($post_id);
         if (is_array($all_meta)) {
             foreach ($all_meta as $meta_key => $meta_values) {
-                // andwプレフィックスのフィールドのみ処理
-                if (strpos($meta_key, 'andw_') === 0 || strpos($meta_key, 'andw-') === 0) {
-                    $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
+                // 未処理のandwプレフィックスフィールドのみ処理
+                if ((strpos($meta_key, 'andw_') === 0 || strpos($meta_key, 'andw-') === 0)
+                    && !isset($custom_fields[$meta_key])) {
 
-                    // 値をサニタイズ
-                    if (!empty($field_value)) {
-                        $custom_fields[$meta_key] = esc_html($field_value);
-                    }
+                    $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
+                    $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
                 }
             }
         }
 
         return $custom_fields;
+    }
+
+    /**
+     * 投稿がピン留めされているかチェック
+     *
+     * @param int $post_id 投稿ID
+     * @return bool ピン留め状態
+     */
+    private function is_post_pinned($post_id) {
+        $pinned = get_post_meta($post_id, 'andw-news-pinned', true);
+        return $pinned === '1' || $pinned === 1;
     }
 }

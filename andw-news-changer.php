@@ -2,7 +2,7 @@
 /**
  * Plugin Name: andW News Changer
  * Description: カスタム投稿タイプ「andw-news」の記事を様々なテンプレートで表示するプラグイン
- * Version: 0.0.2
+ * Version: 0.0.1
  * Author: yasuo3o3
  * Author URI: https://yasuo-o.xyz/
  * License: GPLv2 or later

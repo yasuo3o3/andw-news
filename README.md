@@ -5,7 +5,7 @@
 **Requires at least:** WordPress 6.5
 **Tested up to:** WordPress 6.6
 **Requires PHP:** 7.4
-**Stable tag:** 0.0.1
+**Stable tag:** 0.1.0
 **License:** GPLv2 or later
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,7 +107,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 ## Changelog
 
-### 0.0.1
+### 0.1.0
 
 - 初回リリース
 - 基本テンプレート機能
@@ -117,7 +117,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 ## Upgrade Notice
 
-### 0.0.1
+### 0.1.0
 
 初回リリースです。
 

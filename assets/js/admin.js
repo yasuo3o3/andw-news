@@ -151,7 +151,7 @@
                                     <textarea id="template-html" class="large-text code" rows="15" required>${templateData.html}</textarea>
                                     <p class="description">
                                         <strong>基本トークン:</strong> {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}<br>
-                                        <strong>SCFフィールド:</strong> {andw_news_pinned}, {andw_link_type}, {andw_internal_link}, {andw_external_link}, {andw_link_target}, {andw_event_type}, {andw_event_single_date}, {andw_event_start_date}, {andw_event_end_date}, {andw_event_free_text}, {andw_subcontents} 等<br>
+                                        <strong>SCFフィールド:</strong> {andw-news-pinned}, {andw-link-type}, {andw-internal-link}, {andw-external-link}, {andw-link-target}, {andw-event-type}, {andw-event-single-date}, {andw-event-start-date}, {andw-event-end-date}, {andw-event-free-text}, {andw-subcontents} 等<br>
                                         <strong>条件分岐:</strong> {if field_name}内容{/if}, {ifnot field_name}内容{/ifnot}, {if field_name="value"}内容{else}別の内容{/if}
                                     </p>
                                 </td>
