@@ -27,7 +27,9 @@ class ANDW_News_Gutenberg_Block {
         $block_json_path = ANDW_NEWS_PLUGIN_DIR . 'assets/block/block.json';
 
         if (file_exists($block_json_path)) {
-            register_block_type($block_json_path);
+            register_block_type($block_json_path, [
+                'render_callback' => [$this, 'render_block']
+            ]);
         } else {
             register_block_type('andw-news-changer/news-list', [
                 'attributes' => [
