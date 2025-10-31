@@ -27,6 +27,7 @@ define('ANDW_NEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
  */
 function andw_news_init() {
     // 必要なファイルを読み込み
+    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-post-type.php';
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-template-manager.php';
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-query-handler.php';
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-shortcode.php';
@@ -42,6 +43,7 @@ function andw_news_init() {
     }
 
     // 各クラスを初期化
+    new ANDW_News_Post_Type();
     new ANDW_News_Template_Manager();
     new ANDW_News_Query_Handler();
     new ANDW_News_Shortcode();
