@@ -23,7 +23,14 @@ class ANDW_News_Admin {
         add_action('wp_ajax_andw_news_delete_template', [$this, 'ajax_delete_template']);
         add_action('wp_ajax_andw_news_set_default_template', [$this, 'ajax_set_default_template']);
         add_action('wp_ajax_andw_news_scf_debug', [$this, 'ajax_scf_debug']);
+        add_action('wp_ajax_andw_news_clear_cache', [$this, 'ajax_clear_cache']);
         add_action('admin_init', [$this, 'handle_form_submissions']);
+
+        // キャッシュクリア関連のフック
+        add_action('save_post', [$this, 'on_post_save']);
+        add_action('delete_post', [$this, 'clear_news_cache']);
+        add_action('wp_trash_post', [$this, 'on_post_status_change']);
+        add_action('untrash_post', [$this, 'on_post_status_change']);
     }
 
     /**
@@ -137,6 +144,26 @@ class ANDW_News_Admin {
                                        value="<?php echo esc_attr__('CSS設定を保存', 'andw-news'); ?>" />
                             </p>
                         </form>
+                    </div>
+
+                    <!-- キャッシュ管理 -->
+                    <div class="card">
+                        <h2 class="title"><?php echo esc_html__('キャッシュ管理', 'andw-news'); ?></h2>
+
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><?php echo esc_html__('パフォーマンス', 'andw-news'); ?></th>
+                                <td>
+                                    <p class="description">
+                                        <?php echo esc_html__('テンプレートや投稿を変更すると、キャッシュは自動的にクリアされます。', 'andw-news'); ?>
+                                    </p>
+                                    <button type="button" id="clear-cache" class="button">
+                                        <?php echo esc_html__('キャッシュを手動クリア', 'andw-news'); ?>
+                                    </button>
+                                    <div id="cache-status" style="margin-top: 10px;"></div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
 
@@ -340,6 +367,8 @@ class ANDW_News_Admin {
         $result = $template_manager->save_template($template_name, $template_data);
 
         if ($result) {
+            // テンプレート保存成功時にキャッシュをクリア
+            $this->clear_news_cache();
             wp_send_json_success(['message' => 'Template saved successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to save template']);
@@ -394,6 +423,8 @@ class ANDW_News_Admin {
         $result = $template_manager->duplicate_template($source_name, $new_name, $display_name);
 
         if ($result) {
+            // テンプレート複製成功時にキャッシュをクリア
+            $this->clear_news_cache();
             wp_send_json_success(['message' => 'Template duplicated successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to duplicate template']);
@@ -420,6 +451,8 @@ class ANDW_News_Admin {
         $result = $template_manager->delete_template($template_name);
 
         if ($result) {
+            // テンプレート削除成功時にキャッシュをクリア
+            $this->clear_news_cache();
             wp_send_json_success(['message' => 'Template deleted successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to delete template']);
@@ -462,10 +495,28 @@ class ANDW_News_Admin {
         $result = $template_manager->set_default_template($template_name);
 
         if ($result) {
+            // デフォルトテンプレート設定成功時にキャッシュをクリア
+            $this->clear_news_cache();
             wp_send_json_success(['message' => 'Default template set successfully']);
         } else {
             wp_send_json_error(['message' => 'Failed to set default template']);
         }
+    }
+
+    /**
+     * Ajax: キャッシュクリア
+     */
+    public function ajax_clear_cache() {
+        check_ajax_referer('andw_news_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+        }
+
+        // キャッシュをクリア
+        $this->clear_news_cache();
+
+        wp_send_json_success(['message' => 'Cache cleared successfully']);
     }
 
     /**
@@ -688,5 +739,48 @@ class ANDW_News_Admin {
         }
 
         return $debug_info;
+    }
+
+    /**
+     * andW Newsのキャッシュをクリア
+     */
+    public function clear_news_cache() {
+        global $wpdb;
+
+        // andw_news関連の全transientを削除
+        $wpdb->query($wpdb->prepare("
+            DELETE FROM {$wpdb->options}
+            WHERE option_name LIKE %s
+            OR option_name LIKE %s
+        ", '_transient_andw_news_%', '_transient_timeout_andw_news_%'));
+
+        // ログ記録（デバッグ用）
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('andW News: Cache cleared');
+        }
+    }
+
+    /**
+     * 投稿保存時のキャッシュクリア処理
+     *
+     * @param int $post_id 投稿ID
+     */
+    public function on_post_save($post_id) {
+        // andw-news投稿タイプのみ処理
+        if (get_post_type($post_id) === 'andw-news') {
+            $this->clear_news_cache();
+        }
+    }
+
+    /**
+     * 投稿ステータス変更時のキャッシュクリア処理
+     *
+     * @param int $post_id 投稿ID
+     */
+    public function on_post_status_change($post_id) {
+        // andw-news投稿タイプのみ処理
+        if (get_post_type($post_id) === 'andw-news') {
+            $this->clear_news_cache();
+        }
     }
 }

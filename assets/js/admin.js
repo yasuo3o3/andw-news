@@ -8,6 +8,7 @@
     $(document).ready(function() {
         initTemplatePreview();
         initTemplateActions();
+        initCacheActions();
     });
 
     /**
@@ -515,6 +516,59 @@
                 });
             }, 3000);
         }
+    }
+
+    /**
+     * キャッシュアクション機能を初期化
+     */
+    function initCacheActions() {
+        // キャッシュクリアボタン
+        $('#clear-cache').on('click', function() {
+            clearCache();
+        });
+    }
+
+    /**
+     * キャッシュをクリア
+     */
+    function clearCache() {
+        const $button = $('#clear-cache');
+        const $status = $('#cache-status');
+        const originalText = $button.text();
+
+        // ボタンを無効化してローディング状態にする
+        $button.prop('disabled', true).text('クリア中...');
+        $status.html('');
+
+        $.ajax({
+            url: andwNewsAdmin.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'andw_news_clear_cache',
+                nonce: andwNewsAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $status.html('<span style="color: #00a32a;">✓ キャッシュをクリアしました</span>');
+                } else {
+                    $status.html('<span style="color: #d63638;">✗ クリアに失敗しました: ' + (response.data.message || '不明なエラー') + '</span>');
+                }
+            },
+            error: function() {
+                $status.html('<span style="color: #d63638;">✗ ネットワークエラーが発生しました</span>');
+            },
+            complete: function() {
+                // ボタンを元に戻す
+                $button.prop('disabled', false).text(originalText);
+
+                // 3秒後にステータスメッセージを消去
+                setTimeout(function() {
+                    $status.fadeOut(300, function() {
+                        $(this).html('').show();
+                    });
+                }, 3000);
+            }
+        });
     }
 
 })(jQuery);
