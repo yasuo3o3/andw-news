@@ -149,6 +149,52 @@ class ANDW_News_Admin {
                         </div>
                     </div>
 
+                    <!-- 日付フォーマット機能の説明 -->
+                    <div class="card">
+                        <h2 class="title"><?php echo esc_html__('日付フォーマット機能', 'andw-news'); ?></h2>
+                        <div style="padding: 10px; font-size: 13px; line-height: 1.6;">
+                            <p><strong><?php echo esc_html__('基本的な使い方:', 'andw-news'); ?></strong></p>
+                            <ul style="margin-left: 20px;">
+                                <li><code>{date}</code> - <?php echo esc_html__('デフォルト形式（例：2025.1.31）', 'andw-news'); ?></li>
+                                <li><code>{date:jp}</code> - <?php echo esc_html__('日本語形式（例：2025年1月31日）', 'andw-news'); ?></li>
+                                <li><code>{date:short}</code> - <?php echo esc_html__('短縮形式（例：1/31）', 'andw-news'); ?></li>
+                                <li><code>{event_date:jp}</code> - <?php echo esc_html__('イベント日付の日本語形式', 'andw-news'); ?></li>
+                            </ul>
+
+                            <p><strong><?php echo esc_html__('定義済みフォーマット:', 'andw-news'); ?></strong></p>
+                            <ul style="margin-left: 20px; font-size: 12px;">
+                                <li><code>jp</code> → Y年n月j日（2025年1月31日）</li>
+                                <li><code>jp_full</code> → Y年m月d日（2025年01月31日）</li>
+                                <li><code>short</code> → n/j（1/31）</li>
+                                <li><code>short_full</code> → m/d（01/31）</li>
+                                <li><code>iso</code> → Y-m-d（2025-01-31）</li>
+                                <li><code>dot</code> → Y.m.d（2025.1.31）</li>
+                                <li><code>slash</code> → Y/m/d（2025/1/31）</li>
+                                <li><code>w</code> → Y年n月j日(D)（2025年1月31日(金)）</li>
+                                <li><code>w_full</code> → Y年m月d日(D)（2025年01月31日(金)）</li>
+                            </ul>
+
+                            <p><strong><?php echo esc_html__('カスタムフォーマット:', 'andw-news'); ?></strong></p>
+                            <p style="margin-left: 20px; font-size: 12px;">
+                                <?php echo esc_html__('PHPの日付フォーマット文字列も直接使用可能', 'andw-news'); ?><br>
+                                <code>{date:Y年n月j日}</code> → 2025年1月31日<br>
+                                <code>{date:m/d/Y}</code> → 01/31/2025
+                            </p>
+
+                            <details style="margin-top: 15px;">
+                                <summary style="cursor: pointer; font-weight: bold;">
+                                    <?php echo esc_html__('使用例を表示', 'andw-news'); ?>
+                                </summary>
+                                <div style="background: #f5f5f5; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                                    <pre style="font-size: 11px; margin: 0;"><code>&lt;li&gt;
+    &lt;time datetime="{date:iso}"&gt;{date:jp}&lt;/time&gt;
+    &lt;a href="{link_url}"&gt;{title}&lt;/a&gt;
+&lt;/li&gt;</code></pre>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
                     <!-- 使用方法 -->
                     <div class="card">
                         <h2 class="title"><?php echo esc_html__('使用方法', 'andw-news'); ?></h2>
