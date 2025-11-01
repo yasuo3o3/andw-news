@@ -152,7 +152,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 ```
 andw-news-changer/
-├── andw-news-changer.php      # メインプラグインファイル
+├── andw-news.php              # メインプラグインファイル
 ├── includes/                  # PHPクラスファイル
 │   ├── class-template-manager.php
 │   ├── class-query-handler.php
