@@ -309,6 +309,9 @@ class ANDW_News_Template_Manager {
         // 条件分岐を先に処理
         $html = $this->process_conditionals($html, $data);
 
+        // 日付フォーマット付きトークンを先に処理
+        $html = $this->process_date_format_tokens($html, $data);
+
         $tokens = [
             '{title}' => $data['title'] ?? '',
             '{date}' => $data['date'] ?? '',
@@ -332,6 +335,96 @@ class ANDW_News_Template_Manager {
         }
 
         return str_replace(array_keys($tokens), array_values($tokens), $html);
+    }
+
+    /**
+     * 日付フォーマット付きトークンを処理
+     *
+     * @param string $html HTMLテンプレート
+     * @param array $data データ配列
+     * @return string 処理後のHTML
+     */
+    private function process_date_format_tokens($html, $data) {
+        // {date:format} 形式のトークンを検索
+        $pattern = '/\{date:([^}]+)\}/';
+
+        $html = preg_replace_callback($pattern, function($matches) use ($data) {
+            $format = trim($matches[1]);
+            $date_value = $data['date'] ?? '';
+
+            if (empty($date_value)) {
+                return '';
+            }
+
+            // フォーマット名の短縮形を展開
+            $format_map = [
+                'jp' => 'Y年n月j日',
+                'jp_full' => 'Y年m月d日',
+                'short' => 'n/j',
+                'short_full' => 'm/d',
+                'iso' => 'Y-m-d',
+                'dot' => 'Y.m.d',
+                'slash' => 'Y/m/d',
+                'w' => 'Y年n月j日(D)',
+                'w_full' => 'Y年m月d日(D)',
+            ];
+
+            // マップされたフォーマットがあれば使用、なければそのまま使用
+            $actual_format = $format_map[$format] ?? $format;
+
+            // 日付文字列をタイムスタンプに変換
+            $timestamp = strtotime($date_value);
+            if ($timestamp === false) {
+                return $date_value; // 変換できない場合は元の値を返す
+            }
+
+            // WordPress の wp_date 関数を使用してフォーマット
+            return wp_date($actual_format, $timestamp);
+        }, $html);
+
+        // {event_date:format} 形式のトークンも処理
+        $pattern = '/\{event_date:([^}]+)\}/';
+
+        $html = preg_replace_callback($pattern, function($matches) use ($data) {
+            $format = trim($matches[1]);
+            $event_date_value = $data['event_date'] ?? '';
+
+            if (empty($event_date_value)) {
+                return '';
+            }
+
+            // フォーマット名の短縮形を展開
+            $format_map = [
+                'jp' => 'Y年n月j日',
+                'jp_full' => 'Y年m月d日',
+                'short' => 'n/j',
+                'short_full' => 'm/d',
+                'iso' => 'Y-m-d',
+                'dot' => 'Y.m.d',
+                'slash' => 'Y/m/d',
+                'w' => 'Y年n月j日(D)',
+                'w_full' => 'Y年m月d日(D)',
+            ];
+
+            // マップされたフォーマットがあれば使用、なければそのまま使用
+            $actual_format = $format_map[$format] ?? $format;
+
+            // HTMLタグが含まれている場合の処理（event_dateは複雑な形式の場合がある）
+            if (strpos($event_date_value, '<') !== false) {
+                return $event_date_value; // HTMLが含まれている場合はそのまま返す
+            }
+
+            // 日付文字列をタイムスタンプに変換
+            $timestamp = strtotime($event_date_value);
+            if ($timestamp === false) {
+                return $event_date_value; // 変換できない場合は元の値を返す
+            }
+
+            // WordPress の wp_date 関数を使用してフォーマット
+            return wp_date($actual_format, $timestamp);
+        }, $html);
+
+        return $html;
     }
 
     /**

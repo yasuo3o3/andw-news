@@ -169,6 +169,8 @@
                                 <th colspan="2">
                                     <p class="description">
                                         <strong>基本トークン:</strong> {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}<br>
+                                        <strong>日付フォーマット:</strong> {date:jp} → 2025年1月31日, {date:short} → 1/31, {date:Y年n月j日} → 2025年1月31日<br>
+                                        <strong>フォーマット例:</strong> jp, jp_full, short, short_full, iso, dot, slash, w, w_full または PHPの日付フォーマット<br>
                                         <strong>SCFフィールド:</strong> {andw-news-pinned}, {andw-link-type}, {andw-internal-link}, {andw-external-link}, {andw-link-target}, {andw-event-type}, {andw-event-single-date}, {andw-event-start-date}, {andw-event-end-date}, {andw-event-free-text}, {andw-subcontents} 等<br>
                                         <strong>条件分岐:</strong> {if field_name}内容{/if}, {ifnot field_name}内容{/ifnot}, {if field_name="value"}内容{else}別の内容{/if}
                                     </p>
