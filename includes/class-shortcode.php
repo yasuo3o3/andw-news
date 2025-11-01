@@ -100,13 +100,12 @@ class ANDW_News_Shortcode {
             return '<div class="andw-news-error">' . esc_html__('テンプレートが見つかりません。', 'andw-news') . '</div>';
         }
 
+        // 新しいテンプレートシステムを使用してレンダリング
+        $rendered_content = $template_manager->render_multiple_posts($posts, $template);
+
+        // レイアウトクラスでラップ
         $output = '<div class="andw-news-wrapper andw-news-layout-' . esc_attr($layout) . '">';
-
-        foreach ($posts as $post_data) {
-            $post_html = $template_manager->replace_tokens($template['html'], $post_data);
-            $output .= $post_html;
-        }
-
+        $output .= $rendered_content;
         $output .= '</div>';
 
         return $output;
@@ -171,10 +170,9 @@ class ANDW_News_Shortcode {
                 $first_tab ? 'false' : 'true'
             );
 
-            foreach ($category_data['posts'] as $post_data) {
-                $post_html = $template_manager->replace_tokens($tab_template['html'], $post_data);
-                $output .= $post_html;
-            }
+            // 新しいテンプレートシステムを使用してカテゴリ内の投稿をレンダリング
+            $category_content = $template_manager->render_multiple_posts($category_data['posts'], $tab_template);
+            $output .= $category_content;
 
             $output .= '</div>';
             $first_tab = false;

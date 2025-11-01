@@ -38,8 +38,8 @@ class ANDW_News_Template_Manager {
         $default_templates = [
             'list' => [
                 'name' => 'リスト',
-                'html' => '<div class="andw-news-list">
-                    <article class="andw-news-item{if pinned} andw-news-item--pinned{/if}">
+                'wrapper_html' => '<div class="andw-news-list">{items}</div>',
+                'item_html' => '<article class="andw-news-item{if pinned} andw-news-item--pinned{/if}">
                         <div class="andw-news-content">
                             <div class="andw-news-meta">
                                 <time class="andw-news-date">{date}</time>
@@ -48,14 +48,13 @@ class ANDW_News_Template_Manager {
                             <h3 class="andw-news-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                             <div class="andw-news-excerpt">{excerpt}</div>
                         </div>
-                    </article>
-                </div>',
+                    </article>',
                 'description' => 'シンプルなリスト表示'
             ],
             'cards' => [
                 'name' => 'カード',
-                'html' => '<div class="andw-news-cards">
-                    <div class="andw-news-card{if pinned} andw-news-card--pinned{/if}">
+                'wrapper_html' => '<div class="andw-news-cards">{items}</div>',
+                'item_html' => '<div class="andw-news-card{if pinned} andw-news-card--pinned{/if}">
                         <div class="andw-news-card-thumbnail">{thumbnail}</div>
                         <div class="andw-news-card-content">
                             <div class="andw-news-card-meta">
@@ -66,14 +65,13 @@ class ANDW_News_Template_Manager {
                             <div class="andw-news-card-excerpt">{excerpt}</div>
                             {event_date}
                         </div>
-                    </div>
-                </div>',
+                    </div>',
                 'description' => 'カード形式での表示'
             ],
             'tabs' => [
                 'name' => 'タブ',
-                'html' => '<div class="andw-news-tab-content">
-                    <article class="andw-news-tab-item{if pinned} andw-news-tab-item--pinned{/if}">
+                'wrapper_html' => '<div class="andw-news-tab-content">{items}</div>',
+                'item_html' => '<article class="andw-news-tab-item{if pinned} andw-news-tab-item--pinned{/if}">
                         <div class="andw-news-tab-meta">
                             <time class="andw-news-tab-date">{date}</time>
                             {if pinned}<span class="andw-news-pinned-badge">ピン留め</span>{/if}
@@ -81,9 +79,17 @@ class ANDW_News_Template_Manager {
                         </div>
                         <h3 class="andw-news-tab-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                         <div class="andw-news-tab-excerpt">{excerpt}</div>
-                    </article>
-                </div>',
+                    </article>',
                 'description' => 'タブ切り替え表示'
+            ],
+            'ul_list' => [
+                'name' => 'ULリスト',
+                'wrapper_html' => '<ul class="news">{items}</ul>',
+                'item_html' => '<li>
+                        <time datetime="{date}">{date}</time>
+                        <a href="{link_url}" target="{link_target}">{event_date} {title}</a>
+                    </li>',
+                'description' => 'HTMLリスト形式での表示'
             ]
         ];
 
@@ -168,7 +174,17 @@ class ANDW_News_Template_Manager {
             '#comment' => [], // HTMLコメントを許可
         ];
 
-        $template_data['html'] = wp_kses($template_data['html'], $allowed_tags);
+        // 新形式と従来形式のHTMLフィールドをサニタイズ
+        if (isset($template_data['html'])) {
+            $template_data['html'] = wp_kses($template_data['html'], $allowed_tags);
+        }
+        if (isset($template_data['wrapper_html'])) {
+            $template_data['wrapper_html'] = wp_kses($template_data['wrapper_html'], $allowed_tags);
+        }
+        if (isset($template_data['item_html'])) {
+            $template_data['item_html'] = wp_kses($template_data['item_html'], $allowed_tags);
+        }
+
         $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
         $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
 
@@ -396,5 +412,112 @@ class ANDW_News_Template_Manager {
         $value = $data[$field] ?? '';
 
         return !empty($value);
+    }
+
+    /**
+     * テンプレートタイプを判定（新形式 or 従来形式）
+     *
+     * @param array $template テンプレートデータ
+     * @return string 'new', 'legacy'
+     */
+    public function get_template_type($template) {
+        if (isset($template['wrapper_html']) && isset($template['item_html'])) {
+            return 'new';
+        } elseif (isset($template['html'])) {
+            return 'legacy';
+        }
+        return 'unknown';
+    }
+
+    /**
+     * 複数投稿のレンダリング（新テンプレート形式）
+     *
+     * @param array $posts_data 投稿データ配列
+     * @param array $template テンプレートデータ
+     * @return string レンダリング結果
+     */
+    public function render_multiple_posts($posts_data, $template) {
+        $template_type = $this->get_template_type($template);
+
+        if ($template_type === 'new') {
+            return $this->render_new_template($posts_data, $template);
+        } elseif ($template_type === 'legacy') {
+            return $this->render_legacy_template($posts_data, $template);
+        }
+
+        return '<div class="andw-news-error">Invalid template format</div>';
+    }
+
+    /**
+     * 新テンプレート形式でレンダリング
+     *
+     * @param array $posts_data 投稿データ配列
+     * @param array $template テンプレートデータ
+     * @return string レンダリング結果
+     */
+    private function render_new_template($posts_data, $template) {
+        $items_html = '';
+
+        // 各投稿をitem_htmlでレンダリング
+        foreach ($posts_data as $post_data) {
+            $item_html = $this->replace_tokens($template['item_html'], $post_data);
+            $items_html .= $item_html;
+        }
+
+        // wrapper_htmlで全体をラップ
+        $wrapper_html = str_replace('{items}', $items_html, $template['wrapper_html']);
+
+        return $wrapper_html;
+    }
+
+    /**
+     * 従来テンプレート形式でレンダリング（後方互換性）
+     *
+     * @param array $posts_data 投稿データ配列
+     * @param array $template テンプレートデータ
+     * @return string レンダリング結果
+     */
+    private function render_legacy_template($posts_data, $template) {
+        $output = '';
+
+        // 従来通り各投稿にテンプレート全体を適用
+        foreach ($posts_data as $post_data) {
+            $post_html = $this->replace_tokens($template['html'], $post_data);
+            $output .= $post_html;
+        }
+
+        return $output;
+    }
+
+    /**
+     * 従来形式を新形式に自動変換
+     *
+     * @param array $template 従来形式のテンプレート
+     * @return array 新形式のテンプレート
+     */
+    public function convert_legacy_to_new($template) {
+        if ($this->get_template_type($template) === 'new') {
+            return $template; // 既に新形式
+        }
+
+        // 簡易的な自動変換（完全ではないが基本的なケースに対応）
+        $html = $template['html'];
+
+        // 最外側の要素を検出してwrapperとitemに分離
+        if (preg_match('/^<(\w+)[^>]*>(.*)<\/\1>$/s', trim($html), $matches)) {
+            $tag = $matches[1];
+            $inner_content = $matches[2];
+
+            // シンプルなケース: 単一のarticleやdivの場合
+            $template['wrapper_html'] = '<div class="andw-news-wrapper">{items}</div>';
+            $template['item_html'] = $html;
+        } else {
+            // 複雑な構造の場合はそのままitem_htmlとして使用
+            $template['wrapper_html'] = '<div class="andw-news-wrapper">{items}</div>';
+            $template['item_html'] = $html;
+        }
+
+        // 従来のhtmlフィールドは保持（後方互換性のため）
+        return $template;
     }
 }
