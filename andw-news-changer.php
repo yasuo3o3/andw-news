@@ -6,7 +6,7 @@
  * Author: yasuo3o3
  * Author URI: https://yasuo-o.xyz/
  * License: GPLv2 or later
- * Text Domain: andw-news-changer
+ * Text Domain: andw-news
  * Requires at least: 6.5
  * Requires PHP: 7.4
  */
@@ -35,7 +35,7 @@ function andw_news_init() {
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-gutenberg-block.php';
 
     // 翻訳ファイルを読み込み
-    load_plugin_textdomain('andw-news-changer', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    load_plugin_textdomain('andw-news', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
     // デバッグ機能（WP_DEBUGが有効な場合のみ）
     if (defined('WP_DEBUG') && WP_DEBUG && file_exists(ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php')) {
@@ -187,7 +187,7 @@ add_action('wp_enqueue_scripts', 'andw_news_register_assets');
  */
 function andw_news_admin_assets($hook) {
     // 管理画面ページでのみ読み込み
-    if ($hook !== 'settings_page_andw-news-changer') {
+    if ($hook !== 'settings_page_andw-news') {
         return;
     }
 

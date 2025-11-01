@@ -173,7 +173,7 @@ andw-news-changer/
 
 - nonce + current_user_can() による権限チェック
 - esc_html/esc_url/wp_kses による出力エスケープ
-- 翻訳対応（Text Domain: andw-news-changer）
+- 翻訳対応（Text Domain: andw-news）
 - 接頭辞 andw_news_ による名前空間管理
 
 ### Contributing

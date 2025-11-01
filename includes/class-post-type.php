@@ -29,17 +29,17 @@ class ANDW_News_Post_Type {
      */
     public function register_post_type() {
         $labels = [
-            'name' => __('お知らせ', 'andw-news-changer'),
-            'singular_name' => __('お知らせ', 'andw-news-changer'),
-            'add_new' => __('新規追加', 'andw-news-changer'),
-            'add_new_item' => __('新しいお知らせを追加', 'andw-news-changer'),
-            'edit_item' => __('お知らせを編集', 'andw-news-changer'),
-            'new_item' => __('新しいお知らせ', 'andw-news-changer'),
-            'view_item' => __('お知らせを表示', 'andw-news-changer'),
-            'search_items' => __('お知らせを検索', 'andw-news-changer'),
-            'not_found' => __('お知らせが見つかりませんでした', 'andw-news-changer'),
-            'not_found_in_trash' => __('ゴミ箱にお知らせはありません', 'andw-news-changer'),
-            'menu_name' => __('お知らせ', 'andw-news-changer')
+            'name' => __('お知らせ', 'andw-news'),
+            'singular_name' => __('お知らせ', 'andw-news'),
+            'add_new' => __('新規追加', 'andw-news'),
+            'add_new_item' => __('新しいお知らせを追加', 'andw-news'),
+            'edit_item' => __('お知らせを編集', 'andw-news'),
+            'new_item' => __('新しいお知らせ', 'andw-news'),
+            'view_item' => __('お知らせを表示', 'andw-news'),
+            'search_items' => __('お知らせを検索', 'andw-news'),
+            'not_found' => __('お知らせが見つかりませんでした', 'andw-news'),
+            'not_found_in_trash' => __('ゴミ箱にお知らせはありません', 'andw-news'),
+            'menu_name' => __('お知らせ', 'andw-news')
         ];
 
         $args = [
@@ -68,17 +68,17 @@ class ANDW_News_Post_Type {
      */
     public function register_taxonomy() {
         $labels = [
-            'name' => __('お知らせカテゴリ', 'andw-news-changer'),
-            'singular_name' => __('カテゴリ', 'andw-news-changer'),
-            'search_items' => __('カテゴリを検索', 'andw-news-changer'),
-            'all_items' => __('すべてのカテゴリ', 'andw-news-changer'),
-            'parent_item' => __('親カテゴリ', 'andw-news-changer'),
-            'parent_item_colon' => __('親カテゴリ:', 'andw-news-changer'),
-            'edit_item' => __('カテゴリを編集', 'andw-news-changer'),
-            'update_item' => __('カテゴリを更新', 'andw-news-changer'),
-            'add_new_item' => __('新しいカテゴリを追加', 'andw-news-changer'),
-            'new_item_name' => __('新しいカテゴリ名', 'andw-news-changer'),
-            'menu_name' => __('カテゴリ', 'andw-news-changer')
+            'name' => __('お知らせカテゴリ', 'andw-news'),
+            'singular_name' => __('カテゴリ', 'andw-news'),
+            'search_items' => __('カテゴリを検索', 'andw-news'),
+            'all_items' => __('すべてのカテゴリ', 'andw-news'),
+            'parent_item' => __('親カテゴリ', 'andw-news'),
+            'parent_item_colon' => __('親カテゴリ:', 'andw-news'),
+            'edit_item' => __('カテゴリを編集', 'andw-news'),
+            'update_item' => __('カテゴリを更新', 'andw-news'),
+            'add_new_item' => __('新しいカテゴリを追加', 'andw-news'),
+            'new_item_name' => __('新しいカテゴリ名', 'andw-news'),
+            'menu_name' => __('カテゴリ', 'andw-news')
         ];
 
         $args = [

@@ -32,7 +32,7 @@
       "default": false
     }
   },
-  "textdomain": "andw-news-changer",
+  "textdomain": "andw-news",
   "editorScript": "andw-news-block",
   "editorStyle": "andw-news-block-editor",
   "style": "andw-news-block-style"

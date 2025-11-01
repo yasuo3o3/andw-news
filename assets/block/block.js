@@ -12,11 +12,11 @@
     const { __ } = wp.i18n;
 
     registerBlockType('andw-news-changer/news-list', {
-        title: __('andW News List', 'andw-news-changer'),
-        description: __('andw-news投稿タイプの記事一覧を表示します', 'andw-news-changer'),
+        title: __('andW News List', 'andw-news'),
+        description: __('andw-news投稿タイプの記事一覧を表示します', 'andw-news'),
         category: 'widgets',
         icon: 'admin-page',
-        keywords: [__('news', 'andw-news-changer'), __('list', 'andw-news-changer'), __('andw', 'andw-news-changer')],
+        keywords: [__('news', 'andw-news'), __('list', 'andw-news'), __('andw', 'andw-news')],
 
         attributes: {
             layout: {
@@ -63,14 +63,14 @@
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, {
-                        title: __('表示設定', 'andw-news-changer'),
+                        title: __('表示設定', 'andw-news'),
                         initialOpen: true
                     },
                         el(SelectControl, {
-                            label: __('レイアウト', 'andw-news-changer'),
+                            label: __('レイアウト', 'andw-news'),
                             value: layout,
                             options: [
-                                { label: __('デフォルト', 'andw-news-changer'), value: '' },
+                                { label: __('デフォルト', 'andw-news'), value: '' },
                                 ...templateOptions
                             ],
                             onChange: function(value) {
@@ -79,7 +79,7 @@
                         }),
 
                         el(RangeControl, {
-                            label: __('表示件数', 'andw-news-changer'),
+                            label: __('表示件数', 'andw-news'),
                             value: perPage,
                             min: 1,
                             max: 50,
@@ -89,7 +89,7 @@
                         }),
 
                         el(CheckboxControl, {
-                            label: __('ピン留めを先頭に表示', 'andw-news-changer'),
+                            label: __('ピン留めを先頭に表示', 'andw-news'),
                             checked: pinnedFirst,
                             onChange: function(value) {
                                 setAttributes({ pinnedFirst: value });
@@ -97,7 +97,7 @@
                         }),
 
                         el(CheckboxControl, {
-                            label: __('期限切れ記事を除外', 'andw-news-changer'),
+                            label: __('期限切れ記事を除外', 'andw-news'),
                             checked: excludeExpired,
                             onChange: function(value) {
                                 setAttributes({ excludeExpired: value });
@@ -106,7 +106,7 @@
                     ),
 
                     categoryOptions.length > 0 && el(PanelBody, {
-                        title: __('カテゴリフィルター', 'andw-news-changer'),
+                        title: __('カテゴリフィルター', 'andw-news'),
                         initialOpen: false
                     },
                         categoryOptions.map(function(category) {
@@ -137,7 +137,7 @@
                             fontWeight: 'bold',
                             marginBottom: '5px'
                         }
-                    }, __('andW News List', 'andw-news-changer')),
+                    }, __('andW News List', 'andw-news')),
                     el('div', {
                         style: {
                             fontSize: '14px',
@@ -145,13 +145,13 @@
                         }
                     },
                         layout
-                            ? __('レイアウト: ', 'andw-news-changer') + (templateOptions.find(t => t.value === layout)?.label || layout)
+                            ? __('レイアウト: ', 'andw-news') + (templateOptions.find(t => t.value === layout)?.label || layout)
                             : __('デフォルトレイアウトで表示'),
                         el('br'),
-                        __('表示件数: ', 'andw-news-changer') + perPage + __('件', 'andw-news-changer'),
+                        __('表示件数: ', 'andw-news') + perPage + __('件', 'andw-news'),
                         categories.length > 0 && el('span', {},
                             el('br'),
-                            __('カテゴリ絞り込み: ', 'andw-news-changer') + categories.length + __('件選択', 'andw-news-changer')
+                            __('カテゴリ絞り込み: ', 'andw-news') + categories.length + __('件選択', 'andw-news')
                         )
                     )
                 )
