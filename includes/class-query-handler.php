@@ -158,7 +158,8 @@ class ANDW_News_Query_Handler {
         $data = [
             'id' => $post_id,
             'title' => esc_html(get_the_title($post_id)),
-            'date' => get_the_date('Y.m.d', $post_id),
+            'date' => get_the_date('Y.m.d', $post_id), // 後方互換性のため維持
+            'date_raw' => get_the_date('Y-m-d', $post_id), // 日付フォーマット用の生データ
             'excerpt' => $this->get_post_excerpt($post_id),
             'thumbnail' => $this->get_post_thumbnail($post_id),
             'link_url' => $this->get_post_link_url($post_id),

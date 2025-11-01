@@ -274,7 +274,8 @@ class ANDW_News_Admin {
         $sample_data = [
             [
                 'title' => 'サンプルニュースタイトル1',
-                'date' => '2024.01.15',
+                'date' => '2024.01.15', // 後方互換性のため維持
+                'date_raw' => '2024-01-15', // 日付フォーマット用の生データ
                 'excerpt' => 'これは1つ目のサンプルのニュース記事です。実際の投稿データに置き換わります。',
                 'thumbnail' => $this->get_sample_thumbnail(),
                 'event_date' => '<span class="andw-event-date">2024.01.20</span>',
@@ -283,7 +284,8 @@ class ANDW_News_Admin {
             ],
             [
                 'title' => 'サンプルニュースタイトル2',
-                'date' => '2024.01.10',
+                'date' => '2024.01.10', // 後方互換性のため維持
+                'date_raw' => '2024-01-10', // 日付フォーマット用の生データ
                 'excerpt' => 'これは2つ目のサンプルのニュース記事です。複数件表示のテストに使用されます。',
                 'thumbnail' => $this->get_sample_thumbnail(),
                 'event_date' => '<span class="andw-event-date">2024.01.25</span>',

@@ -350,7 +350,9 @@ class ANDW_News_Template_Manager {
 
         $html = preg_replace_callback($pattern, function($matches) use ($data) {
             $format = trim($matches[1]);
-            $date_value = $data['date'] ?? '';
+
+            // 優先順位: date_raw > date
+            $date_value = $data['date_raw'] ?? $data['date'] ?? '';
 
             if (empty($date_value)) {
                 return '';
@@ -372,8 +374,8 @@ class ANDW_News_Template_Manager {
             // マップされたフォーマットがあれば使用、なければそのまま使用
             $actual_format = $format_map[$format] ?? $format;
 
-            // 日付文字列をタイムスタンプに変換
-            $timestamp = strtotime($date_value);
+            // 日付文字列をタイムスタンプに変換（複数形式に対応）
+            $timestamp = $this->parse_date_string($date_value);
             if ($timestamp === false) {
                 return $date_value; // 変換できない場合は元の値を返す
             }
@@ -414,8 +416,8 @@ class ANDW_News_Template_Manager {
                 return $event_date_value; // HTMLが含まれている場合はそのまま返す
             }
 
-            // 日付文字列をタイムスタンプに変換
-            $timestamp = strtotime($event_date_value);
+            // 日付文字列をタイムスタンプに変換（複数形式に対応）
+            $timestamp = $this->parse_date_string($event_date_value);
             if ($timestamp === false) {
                 return $event_date_value; // 変換できない場合は元の値を返す
             }
@@ -425,6 +427,54 @@ class ANDW_News_Template_Manager {
         }, $html);
 
         return $html;
+    }
+
+    /**
+     * 日付文字列を解析してタイムスタンプを取得
+     *
+     * @param string $date_string 日付文字列
+     * @return int|false タイムスタンプまたはfalse
+     */
+    private function parse_date_string($date_string) {
+        if (empty($date_string)) {
+            return false;
+        }
+
+        // 複数の日付形式を試行
+        $formats = [
+            'Y-m-d',        // 2025-01-31
+            'Y.m.d',        // 2025.1.31 or 2025.01.31
+            'Y/m/d',        // 2025/1/31 or 2025/01/31
+            'Y-m-d H:i:s',  // 2025-01-31 12:34:56
+            'm/d/Y',        // 1/31/2025
+            'd/m/Y',        // 31/1/2025
+            'd.m.Y',        // 31.1.2025
+        ];
+
+        // まずstrtotimeで試行
+        $timestamp = strtotime($date_string);
+        if ($timestamp !== false) {
+            return $timestamp;
+        }
+
+        // 各フォーマットでDateTimeを使って解析を試行
+        foreach ($formats as $format) {
+            $date = DateTime::createFromFormat($format, $date_string);
+            if ($date !== false) {
+                return $date->getTimestamp();
+            }
+        }
+
+        // ドット区切りの日付を特別処理（2025.1.31 -> 2025-01-31）
+        if (preg_match('/^(\d{4})\.(\d{1,2})\.(\d{1,2})$/', $date_string, $matches)) {
+            $normalized = sprintf('%04d-%02d-%02d', $matches[1], $matches[2], $matches[3]);
+            $timestamp = strtotime($normalized);
+            if ($timestamp !== false) {
+                return $timestamp;
+            }
+        }
+
+        return false;
     }
 
     /**
