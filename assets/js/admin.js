@@ -262,15 +262,8 @@
                         onSaveCallback();
                     }
 
-                    // ボタンを「閉じる」に変更
-                    $saveButton.prop('disabled', false).text('閉じる').removeClass('button-primary').addClass('button-secondary');
-                    $('#cancel-edit').text('閉じる');
-
-                    // 閉じるボタンのクリックイベントを再設定（ページリロード付き）
-                    $saveButton.off('click').on('click', function() {
-                        $('#template-editor-modal').remove();
-                        location.reload();
-                    });
+                    // 保存ボタンは元に戻す（保存のまま）
+                    $saveButton.prop('disabled', false).text(originalButtonText);
                 } else {
                     // エラーメッセージをモーダル内に表示
                     showModalNotification('保存に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
