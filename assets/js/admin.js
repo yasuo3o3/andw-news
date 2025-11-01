@@ -181,7 +181,7 @@
 
                         <p class="submit">
                             <button type="submit" class="button button-primary">保存</button>
-                            <button type="button" class="button" id="cancel-edit">キャンセル</button>
+                            <button type="button" class="button" id="cancel-edit">閉じる</button>
                         </p>
                     </form>
                 </div>
@@ -190,14 +190,23 @@
 
         $('body').append(html);
 
+        // 保存完了フラグ
+        let saveCompleted = false;
+
         // イベントハンドラー
         $('#template-editor-form').on('submit', function(e) {
             e.preventDefault();
-            saveTemplate(templateName, isEdit);
+            saveTemplate(templateName, isEdit, function() {
+                saveCompleted = true;
+            });
         });
 
         $('#cancel-edit').on('click', function() {
             $('#template-editor-modal').remove();
+            // 保存が完了している場合はページをリロード
+            if (saveCompleted) {
+                location.reload();
+            }
         });
 
         // ESCキーでモーダルを閉じる
@@ -205,6 +214,10 @@
             if (e.keyCode === 27) {
                 $('#template-editor-modal').remove();
                 $(document).off('keyup.template-editor');
+                // ESCでも保存後はリロード
+                if (saveCompleted) {
+                    location.reload();
+                }
             }
         });
     }
@@ -213,7 +226,7 @@
     /**
      * テンプレートを保存
      */
-    function saveTemplate(originalName, isEdit) {
+    function saveTemplate(originalName, isEdit, onSaveCallback) {
         const templateData = {
             name: $('#template-name').val(),
             description: $('#template-description').val(),
@@ -244,11 +257,20 @@
                     // 成功メッセージをモーダル内に表示
                     showModalNotification('テンプレートを保存しました！', 'success');
 
-                    // 2秒後にモーダルを閉じてページをリロード
-                    setTimeout(function() {
+                    // 保存完了コールバックを呼び出し
+                    if (onSaveCallback) {
+                        onSaveCallback();
+                    }
+
+                    // ボタンを「閉じる」に変更
+                    $saveButton.prop('disabled', false).text('閉じる').removeClass('button-primary').addClass('button-secondary');
+                    $('#cancel-edit').text('閉じる');
+
+                    // 閉じるボタンのクリックイベントを再設定（ページリロード付き）
+                    $saveButton.off('click').on('click', function() {
                         $('#template-editor-modal').remove();
                         location.reload();
-                    }, 2000);
+                    });
                 } else {
                     // エラーメッセージをモーダル内に表示
                     showModalNotification('保存に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
