@@ -15,7 +15,12 @@ class ANDW_News_Gutenberg_Block {
      * コンストラクタ
      */
     public function __construct() {
-        add_action('init', [$this, 'register_block']);
+        if (did_action('init')) {
+            $this->register_block();
+        } else {
+            add_action('init', [$this, 'register_block']);
+        }
+
         add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
     }
 
