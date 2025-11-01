@@ -6,7 +6,7 @@
     'use strict';
 
     const { registerBlockType } = wp.blocks;
-    const { InspectorControls } = wp.blockEditor;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
     const { PanelBody, SelectControl, CheckboxControl, RangeControl } = wp.components;
     const { createElement: el, Fragment } = wp.element;
     const { __ } = wp.i18n;
@@ -48,6 +48,17 @@
             // テンプレートオプションを取得
             const templateOptions = andwNewsBlock.templates || [];
             const categoryOptions = andwNewsBlock.categories || [];
+
+            // useBlockPropsを使用してブロック属性を取得
+            const blockProps = useBlockProps({
+                className: 'andw-news-block-placeholder',
+                style: {
+                    padding: '20px',
+                    border: '2px dashed #ccc',
+                    textAlign: 'center',
+                    backgroundColor: '#f9f9f9'
+                }
+            });
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -114,15 +125,7 @@
                     )
                 ),
 
-                el('div', {
-                    className: 'andw-news-block-placeholder',
-                    style: {
-                        padding: '20px',
-                        border: '2px dashed #ccc',
-                        textAlign: 'center',
-                        backgroundColor: '#f9f9f9'
-                    }
-                },
+                el('div', blockProps,
                     el('div', {
                         style: {
                             fontSize: '18px',
