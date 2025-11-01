@@ -224,15 +224,26 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Template name is required']);
         }
 
-        // サンプルデータでプレビューを生成
+        // サンプルデータでプレビューを生成（複数件のサンプル）
         $sample_data = [
-            'title' => 'サンプルニュースタイトル',
-            'date' => '2024.01.15',
-            'excerpt' => 'これはサンプルのニュース記事です。実際の投稿データに置き換わります。',
-            'thumbnail' => $this->get_sample_thumbnail(),
-            'event_date' => '<span class="andw-event-date">2024.01.20</span>',
-            'link_url' => '#',
-            'link_target' => '_self'
+            [
+                'title' => 'サンプルニュースタイトル1',
+                'date' => '2024.01.15',
+                'excerpt' => 'これは1つ目のサンプルのニュース記事です。実際の投稿データに置き換わります。',
+                'thumbnail' => $this->get_sample_thumbnail(),
+                'event_date' => '<span class="andw-event-date">2024.01.20</span>',
+                'link_url' => '#',
+                'link_target' => '_self'
+            ],
+            [
+                'title' => 'サンプルニュースタイトル2',
+                'date' => '2024.01.10',
+                'excerpt' => 'これは2つ目のサンプルのニュース記事です。複数件表示のテストに使用されます。',
+                'thumbnail' => $this->get_sample_thumbnail(),
+                'event_date' => '<span class="andw-event-date">2024.01.25</span>',
+                'link_url' => '#',
+                'link_target' => '_self'
+            ]
         ];
 
         $template_manager = new ANDW_News_Template_Manager();
@@ -242,7 +253,8 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Template not found']);
         }
 
-        $preview_html = $template_manager->replace_tokens($template['html'], $sample_data);
+        // 新方式のテンプレートシステムを使用してプレビューを生成
+        $preview_html = $template_manager->render_multiple_posts($sample_data, $template);
 
         wp_send_json_success(['html' => $preview_html]);
     }
