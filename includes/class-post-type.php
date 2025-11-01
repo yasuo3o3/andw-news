@@ -15,8 +15,13 @@ class ANDW_News_Post_Type {
      * コンストラクタ
      */
     public function __construct() {
-        add_action('init', [$this, 'register_post_type']);
-        add_action('init', [$this, 'register_taxonomy']);
+        if (did_action('init')) {
+            $this->register_post_type();
+            $this->register_taxonomy();
+        } else {
+            add_action('init', [$this, 'register_post_type']);
+            add_action('init', [$this, 'register_taxonomy']);
+        }
     }
 
     /**
