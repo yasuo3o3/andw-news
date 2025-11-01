@@ -175,6 +175,10 @@
                                 </th>
                             </tr>
                         </table>
+
+                        <!-- 通知エリア -->
+                        <div id="template-editor-notification" style="margin: 15px 0; display: none;"></div>
+
                         <p class="submit">
                             <button type="submit" class="button button-primary">保存</button>
                             <button type="button" class="button" id="cancel-edit">キャンセル</button>
@@ -237,23 +241,23 @@
             data: data,
             success: function(response) {
                 if (response.success) {
-                    // 成功メッセージを表示
-                    showNotification('テンプレートを保存しました！', 'success');
+                    // 成功メッセージをモーダル内に表示
+                    showModalNotification('テンプレートを保存しました！', 'success');
 
-                    // 1秒後にモーダルを閉じてページをリロード
+                    // 2秒後にモーダルを閉じてページをリロード
                     setTimeout(function() {
                         $('#template-editor-modal').remove();
                         location.reload();
-                    }, 1000);
+                    }, 2000);
                 } else {
-                    // エラーメッセージを表示
-                    showNotification('保存に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
+                    // エラーメッセージをモーダル内に表示
+                    showModalNotification('保存に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
                     // ボタンを元に戻す
                     $saveButton.prop('disabled', false).text(originalButtonText);
                 }
             },
             error: function() {
-                showNotification('保存に失敗しました。ネットワークエラーの可能性があります。', 'error');
+                showModalNotification('保存に失敗しました。ネットワークエラーの可能性があります。', 'error');
                 // ボタンを元に戻す
                 $saveButton.prop('disabled', false).text(originalButtonText);
             }
@@ -379,7 +383,57 @@
     }
 
     /**
-     * 通知メッセージを表示
+     * モーダル内通知メッセージを表示
+     */
+    function showModalNotification(message, type) {
+        const $notificationArea = $('#template-editor-notification');
+
+        // 通知タイプに応じたスタイルとアイコンを設定
+        const bgColor = type === 'success' ? '#00a32a' : '#d63638';
+        const icon = type === 'success' ? '✓' : '✗';
+
+        // 通知HTML作成
+        const notificationHtml = `
+            <div style="
+                background: ${bgColor};
+                color: white;
+                padding: 12px 16px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+                animation: slideDown 0.3s ease-out;
+            ">
+                <span style="font-size: 16px;">${icon}</span>
+                <span>${message}</span>
+            </div>
+        `;
+
+        // 既存の通知をクリアして新しい通知を表示
+        $notificationArea.html(notificationHtml).show();
+
+        // CSSアニメーションを追加（1回だけ）
+        if (!$('#modal-notification-style').length) {
+            $('head').append(`
+                <style id="modal-notification-style">
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                </style>
+            `);
+        }
+    }
+
+    /**
+     * 通知メッセージを表示（画面右上用）
      */
     function showNotification(message, type) {
         // 既存の通知を削除
