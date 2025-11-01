@@ -31,10 +31,10 @@ class ANDW_News_Admin {
      */
     public function add_admin_menu() {
         add_options_page(
-            __('お知らせ設定', 'andw-news'),
-            __('お知らせ設定', 'andw-news'),
+            __('お知らせ設定', 'andw-news-changer'),
+            __('お知らせ設定', 'andw-news-changer'),
             'manage_options',
-            'andw-news',
+            'andw-news-changer',
             [$this, 'admin_page']
         );
     }
@@ -45,7 +45,7 @@ class ANDW_News_Admin {
     public function admin_page() {
         // nonceチェック
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('このページにアクセスする権限がありません。', 'andw-news'));
+            wp_die(esc_html__('このページにアクセスする権限がありません。', 'andw-news-changer'));
         }
 
         $template_manager = new ANDW_News_Template_Manager();
@@ -58,7 +58,7 @@ class ANDW_News_Admin {
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('お知らせ設定', 'andw-news'); ?></h1>
+            <h1><?php echo esc_html__('お知らせ設定', 'andw-news-changer'); ?></h1>
 
             <?php $this->show_admin_notices(); ?>
             <?php $this->show_duplicate_warnings($duplicates); ?>
@@ -67,21 +67,21 @@ class ANDW_News_Admin {
                 <!-- 左側: テンプレート管理 -->
                 <div style="flex: 1;">
                     <div class="card">
-                        <h2 class="title"><?php echo esc_html__('テンプレート管理', 'andw-news'); ?></h2>
+                        <h2 class="title"><?php echo esc_html__('テンプレート管理', 'andw-news-changer'); ?></h2>
 
                         <table class="form-table">
                             <tr>
                                 <th scope="row">
-                                    <label for="template-select"><?php echo esc_html__('テンプレート選択', 'andw-news'); ?></label>
+                                    <label for="template-select"><?php echo esc_html__('テンプレート選択', 'andw-news-changer'); ?></label>
                                 </th>
                                 <td>
                                     <select id="template-select" class="regular-text">
-                                        <option value=""><?php echo esc_html__('選択してください', 'andw-news'); ?></option>
+                                        <option value=""><?php echo esc_html__('選択してください', 'andw-news-changer'); ?></option>
                                         <?php foreach ($templates as $key => $template): ?>
                                             <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $default_template); ?>>
                                                 <?php echo esc_html($template['name']); ?>
                                                 <?php if ($key === $default_template): ?>
-                                                    (<?php echo esc_html__('デフォルト', 'andw-news'); ?>)
+                                                    (<?php echo esc_html__('デフォルト', 'andw-news-changer'); ?>)
                                                 <?php endif; ?>
                                                 [<?php echo esc_html($key); ?>]
                                             </option>
@@ -93,40 +93,40 @@ class ANDW_News_Admin {
 
                         <p class="submit">
                             <button type="button" id="create-template" class="button button-primary">
-                                <?php echo esc_html__('新規作成', 'andw-news'); ?>
+                                <?php echo esc_html__('新規作成', 'andw-news-changer'); ?>
                             </button>
                             <button type="button" id="edit-template" class="button">
-                                <?php echo esc_html__('編集', 'andw-news'); ?>
+                                <?php echo esc_html__('編集', 'andw-news-changer'); ?>
                             </button>
                             <button type="button" id="duplicate-template" class="button">
-                                <?php echo esc_html__('複製', 'andw-news'); ?>
+                                <?php echo esc_html__('複製', 'andw-news-changer'); ?>
                             </button>
                             <button type="button" id="delete-template" class="button button-secondary">
-                                <?php echo esc_html__('削除', 'andw-news'); ?>
+                                <?php echo esc_html__('削除', 'andw-news-changer'); ?>
                             </button>
                             <button type="button" id="set-default" class="button">
-                                <?php echo esc_html__('デフォルトに設定', 'andw-news'); ?>
+                                <?php echo esc_html__('デフォルトに設定', 'andw-news-changer'); ?>
                             </button>
                         </p>
                     </div>
 
                     <!-- CSS設定 -->
                     <div class="card">
-                        <h2 class="title"><?php echo esc_html__('CSS設定', 'andw-news'); ?></h2>
+                        <h2 class="title"><?php echo esc_html__('CSS設定', 'andw-news-changer'); ?></h2>
 
                         <form method="post" action="">
                             <?php wp_nonce_field('andw_news_css_settings', 'andw_news_css_nonce'); ?>
 
                             <table class="form-table">
                                 <tr>
-                                    <th scope="row"><?php echo esc_html__('プラグインCSS', 'andw-news'); ?></th>
+                                    <th scope="row"><?php echo esc_html__('プラグインCSS', 'andw-news-changer'); ?></th>
                                     <td>
                                         <label>
                                             <input type="checkbox" name="disable_css" value="1" <?php checked($disable_css); ?> />
-                                            <?php echo esc_html__('プラグインのCSSを無効化する', 'andw-news'); ?>
+                                            <?php echo esc_html__('プラグインのCSSを無効化する', 'andw-news-changer'); ?>
                                         </label>
                                         <p class="description">
-                                            <?php echo esc_html__('チェックすると、プラグインのデフォルトCSSが読み込まれなくなります。', 'andw-news'); ?>
+                                            <?php echo esc_html__('チェックすると、プラグインのデフォルトCSSが読み込まれなくなります。', 'andw-news-changer'); ?>
                                         </p>
                                     </td>
                                 </tr>
@@ -134,7 +134,7 @@ class ANDW_News_Admin {
 
                             <p class="submit">
                                 <input type="submit" name="save_css_settings" class="button button-primary"
-                                       value="<?php echo esc_attr__('CSS設定を保存', 'andw-news'); ?>" />
+                                       value="<?php echo esc_attr__('CSS設定を保存', 'andw-news-changer'); ?>" />
                             </p>
                         </form>
                     </div>
@@ -143,19 +143,19 @@ class ANDW_News_Admin {
                 <!-- 右側: プレビュー -->
                 <div style="flex: 1;">
                     <div class="card">
-                        <h2 class="title"><?php echo esc_html__('プレビュー', 'andw-news'); ?></h2>
+                        <h2 class="title"><?php echo esc_html__('プレビュー', 'andw-news-changer'); ?></h2>
                         <div id="preview-area" style="border: 1px solid #ddd; padding: 20px; min-height: 300px; background: #f9f9f9;">
-                            <p><?php echo esc_html__('テンプレートを選択してください。', 'andw-news'); ?></p>
+                            <p><?php echo esc_html__('テンプレートを選択してください。', 'andw-news-changer'); ?></p>
                         </div>
                     </div>
 
                     <!-- 使用方法 -->
                     <div class="card">
-                        <h2 class="title"><?php echo esc_html__('使用方法', 'andw-news'); ?></h2>
-                        <h4><?php echo esc_html__('ショートコード', 'andw-news'); ?></h4>
+                        <h2 class="title"><?php echo esc_html__('使用方法', 'andw-news-changer'); ?></h2>
+                        <h4><?php echo esc_html__('ショートコード', 'andw-news-changer'); ?></h4>
                         <code>[andw_news layout="list" per_page="10"]</code>
 
-                        <h4><?php echo esc_html__('利用可能な属性', 'andw-news'); ?></h4>
+                        <h4><?php echo esc_html__('利用可能な属性', 'andw-news-changer'); ?></h4>
                         <ul>
                             <li><strong>layout</strong>: テンプレート名</li>
                             <li><strong>cats</strong>: カテゴリID（カンマ区切り）</li>
@@ -164,14 +164,14 @@ class ANDW_News_Admin {
                             <li><strong>exclude_expired</strong>: 期限切れ除外（1 or 0）</li>
                         </ul>
 
-                        <h4><?php echo esc_html__('Gutenbergブロック', 'andw-news'); ?></h4>
-                        <p><?php echo esc_html__('「andW News List」ブロックを検索して使用できます。', 'andw-news'); ?></p>
+                        <h4><?php echo esc_html__('Gutenbergブロック', 'andw-news-changer'); ?></h4>
+                        <p><?php echo esc_html__('「andW News List」ブロックを検索して使用できます。', 'andw-news-changer'); ?></p>
                     </div>
 
                     <!-- SCFデバッグ -->
                     <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
                     <div class="card">
-                        <h2 class="title"><?php echo esc_html__('SCFデバッグ', 'andw-news'); ?></h2>
+                        <h2 class="title"><?php echo esc_html__('SCFデバッグ', 'andw-news-changer'); ?></h2>
                         <?php $this->render_scf_debug_section(); ?>
                     </div>
                     <?php endif; ?>
@@ -196,7 +196,7 @@ class ANDW_News_Admin {
 
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-success is-dismissible"><p>' .
-                     esc_html__('CSS設定を保存しました。', 'andw-news') . '</p></div>';
+                     esc_html__('CSS設定を保存しました。', 'andw-news-changer') . '</p></div>';
             });
         }
     }
@@ -446,10 +446,10 @@ class ANDW_News_Admin {
 
         foreach ($duplicates as $duplicate) {
             echo '<div class="notice notice-warning is-dismissible">';
-            echo '<p><strong>' . esc_html__('重複テンプレート警告', 'andw-news') . ':</strong> ';
+            echo '<p><strong>' . esc_html__('重複テンプレート警告', 'andw-news-changer') . ':</strong> ';
             echo sprintf(
                 // translators: %1$s is template name, %2$s is comma-separated keys.
-                esc_html__('「%1$s」という名前のテンプレートが複数存在します（キー: %2$s）。混乱を避けるため、不要なテンプレートを削除することをお勧めします。', 'andw-news'),
+                esc_html__('「%1$s」という名前のテンプレートが複数存在します（キー: %2$s）。混乱を避けるため、不要なテンプレートを削除することをお勧めします。', 'andw-news-changer'),
                 esc_html($duplicate['name']),
                 esc_html(implode(', ', $duplicate['keys']))
             );
@@ -466,22 +466,22 @@ class ANDW_News_Admin {
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="debug-post-id"><?php echo esc_html__('投稿ID', 'andw-news'); ?></label>
+                        <label for="debug-post-id"><?php echo esc_html__('投稿ID', 'andw-news-changer'); ?></label>
                     </th>
                     <td>
-                        <input type="number" id="debug-post-id" class="regular-text" placeholder="<?php echo esc_attr__('空白で最新投稿', 'andw-news'); ?>" />
-                        <p class="description"><?php echo esc_html__('デバッグしたいandw-news投稿のIDを入力してください。', 'andw-news'); ?></p>
+                        <input type="number" id="debug-post-id" class="regular-text" placeholder="<?php echo esc_attr__('空白で最新投稿', 'andw-news-changer'); ?>" />
+                        <p class="description"><?php echo esc_html__('デバッグしたいandw-news投稿のIDを入力してください。', 'andw-news-changer'); ?></p>
                     </td>
                 </tr>
             </table>
             <p class="submit">
                 <button type="button" id="run-scf-debug" class="button button-primary">
-                    <?php echo esc_html__('SCFデバッグ実行', 'andw-news'); ?>
+                    <?php echo esc_html__('SCFデバッグ実行', 'andw-news-changer'); ?>
                 </button>
             </p>
         </form>
         <div id="scf-debug-results" style="margin-top: 20px; display: none;">
-            <h4><?php echo esc_html__('デバッグ結果', 'andw-news'); ?></h4>
+            <h4><?php echo esc_html__('デバッグ結果', 'andw-news-changer'); ?></h4>
             <pre id="scf-debug-output" style="background: #f1f1f1; padding: 10px; overflow: auto; max-height: 400px; font-size: 12px;"></pre>
         </div>
 
@@ -492,7 +492,7 @@ class ANDW_News_Admin {
                 var button = this;
                 var originalText = button.textContent;
 
-                button.textContent = '<?php echo esc_js(__('実行中...', 'andw-news')); ?>';
+                button.textContent = '<?php echo esc_js(__('実行中...', 'andw-news-changer')); ?>';
                 button.disabled = true;
 
                 var formData = new FormData();
@@ -510,12 +510,12 @@ class ANDW_News_Admin {
                         document.getElementById('scf-debug-output').textContent = JSON.stringify(data.data, null, 2);
                         document.getElementById('scf-debug-results').style.display = 'block';
                     } else {
-                        alert('<?php echo esc_js(__('エラーが発生しました: ', 'andw-news')); ?>' + (data.data || '<?php echo esc_js(__('不明なエラー', 'andw-news')); ?>'));
+                        alert('<?php echo esc_js(__('エラーが発生しました: ', 'andw-news-changer')); ?>' + (data.data || '<?php echo esc_js(__('不明なエラー', 'andw-news-changer')); ?>'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('<?php echo esc_js(__('通信エラーが発生しました', 'andw-news')); ?>');
+                    alert('<?php echo esc_js(__('通信エラーが発生しました', 'andw-news-changer')); ?>');
                 })
                 .finally(() => {
                     button.textContent = originalText;
@@ -533,13 +533,13 @@ class ANDW_News_Admin {
     public function ajax_scf_debug() {
         // nonce検証
         if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'andw_news_scf_debug')) {
-            wp_send_json_error(__('不正なリクエストです。', 'andw-news'));
+            wp_send_json_error(__('不正なリクエストです。', 'andw-news-changer'));
             return;
         }
 
         // 権限チェック
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('権限がありません。', 'andw-news'));
+            wp_send_json_error(__('権限がありません。', 'andw-news-changer'));
         }
 
         $post_id = isset($_POST['post_id']) && !empty($_POST['post_id']) ? intval(wp_unslash($_POST['post_id'])) : null;
@@ -565,7 +565,7 @@ class ANDW_News_Admin {
             ]);
 
             if (empty($posts)) {
-                throw new Exception(esc_html__('andw-news投稿が見つかりません', 'andw-news'));
+                throw new Exception(esc_html__('andw-news投稿が見つかりません', 'andw-news-changer'));
             }
 
             $post_id = $posts[0]->ID;

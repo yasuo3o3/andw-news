@@ -90,14 +90,14 @@ class ANDW_News_Shortcode {
      */
     private function render_posts($posts, $layout) {
         if (empty($posts)) {
-            return '<div class="andw-news-empty">' . esc_html__('お知らせはありません。', 'andw-news') . '</div>';
+            return '<div class="andw-news-empty">' . esc_html__('お知らせはありません。', 'andw-news-changer') . '</div>';
         }
 
         $template_manager = new ANDW_News_Template_Manager();
         $template = $template_manager->get_template($layout);
 
         if (!$template) {
-            return '<div class="andw-news-error">' . esc_html__('テンプレートが見つかりません。', 'andw-news') . '</div>';
+            return '<div class="andw-news-error">' . esc_html__('テンプレートが見つかりません。', 'andw-news-changer') . '</div>';
         }
 
         $output = '<div class="andw-news-wrapper andw-news-layout-' . esc_attr($layout) . '">';
@@ -123,14 +123,14 @@ class ANDW_News_Shortcode {
         $categorized_posts = $query_handler->get_news_by_categories($args);
 
         if (empty($categorized_posts)) {
-            return '<div class="andw-news-empty">' . esc_html__('お知らせはありません。', 'andw-news') . '</div>';
+            return '<div class="andw-news-empty">' . esc_html__('お知らせはありません。', 'andw-news-changer') . '</div>';
         }
 
         $template_manager = new ANDW_News_Template_Manager();
         $tab_template = $template_manager->get_template('tabs');
 
         if (!$tab_template) {
-            return '<div class="andw-news-error">' . esc_html__('タブテンプレートが見つかりません。', 'andw-news') . '</div>';
+            return '<div class="andw-news-error">' . esc_html__('タブテンプレートが見つかりません。', 'andw-news-changer') . '</div>';
         }
 
         $output = '<div class="andw-tabs" data-andw-tabs>';
