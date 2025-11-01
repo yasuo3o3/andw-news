@@ -226,20 +226,36 @@
             nonce: andwNewsAdmin.nonce
         };
 
+        // 保存ボタンを無効化してローディング状態にする
+        const $saveButton = $('#template-editor-form button[type="submit"]');
+        const originalButtonText = $saveButton.text();
+        $saveButton.prop('disabled', true).text('保存中...');
+
         $.ajax({
             url: andwNewsAdmin.ajaxurl,
             type: 'POST',
             data: data,
             success: function(response) {
                 if (response.success) {
-                    $('#template-editor-modal').remove();
-                    location.reload(); // 簡易的にページをリロード
+                    // 成功メッセージを表示
+                    showNotification('テンプレートを保存しました！', 'success');
+
+                    // 1秒後にモーダルを閉じてページをリロード
+                    setTimeout(function() {
+                        $('#template-editor-modal').remove();
+                        location.reload();
+                    }, 1000);
                 } else {
-                    alert('保存に失敗しました: ' + (response.data.message || '不明なエラー'));
+                    // エラーメッセージを表示
+                    showNotification('保存に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
+                    // ボタンを元に戻す
+                    $saveButton.prop('disabled', false).text(originalButtonText);
                 }
             },
             error: function() {
-                alert('保存に失敗しました。');
+                showNotification('保存に失敗しました。ネットワークエラーの可能性があります。', 'error');
+                // ボタンを元に戻す
+                $saveButton.prop('disabled', false).text(originalButtonText);
             }
         });
     }
@@ -292,13 +308,16 @@
             },
             success: function(response) {
                 if (response.success) {
-                    location.reload();
+                    showNotification('テンプレートを複製しました', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
                 } else {
-                    alert('複製に失敗しました: ' + (response.data.message || '不明なエラー'));
+                    showNotification('複製に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
                 }
             },
             error: function() {
-                alert('複製に失敗しました。');
+                showNotification('複製に失敗しました。ネットワークエラーの可能性があります。', 'error');
             }
         });
     }
@@ -317,13 +336,16 @@
             },
             success: function(response) {
                 if (response.success) {
-                    location.reload();
+                    showNotification('テンプレートを削除しました', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
                 } else {
-                    alert('削除に失敗しました: ' + (response.data.message || '不明なエラー'));
+                    showNotification('削除に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
                 }
             },
             error: function() {
-                alert('削除に失敗しました。');
+                showNotification('削除に失敗しました。ネットワークエラーの可能性があります。', 'error');
             }
         });
     }
@@ -342,16 +364,86 @@
             },
             success: function(response) {
                 if (response.success) {
-                    alert('デフォルトテンプレートを設定しました。');
-                    location.reload();
+                    showNotification('デフォルトテンプレートを設定しました', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
                 } else {
-                    alert('設定に失敗しました: ' + (response.data.message || '不明なエラー'));
+                    showNotification('設定に失敗しました: ' + (response.data.message || '不明なエラー'), 'error');
                 }
             },
             error: function() {
-                alert('設定に失敗しました。');
+                showNotification('設定に失敗しました。ネットワークエラーの可能性があります。', 'error');
             }
         });
+    }
+
+    /**
+     * 通知メッセージを表示
+     */
+    function showNotification(message, type) {
+        // 既存の通知を削除
+        $('.andw-notification').remove();
+
+        // 通知タイプに応じたクラスとアイコンを設定
+        const typeClass = type === 'success' ? 'notice-success' : 'notice-error';
+        const icon = type === 'success' ? '✓' : '✗';
+
+        // 通知要素を作成
+        const notification = $(`
+            <div class="andw-notification notice ${typeClass} is-dismissible" style="
+                position: fixed;
+                top: 32px;
+                right: 20px;
+                z-index: 100001;
+                max-width: 400px;
+                padding: 12px 16px;
+                margin: 0;
+                background: ${type === 'success' ? '#00a32a' : '#d63638'};
+                color: white;
+                border: none;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+            ">
+                <span style="font-size: 16px;">${icon}</span>
+                <span>${message}</span>
+                <button type="button" class="notice-dismiss" style="
+                    background: none;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    padding: 0;
+                    margin-left: auto;
+                    font-size: 18px;
+                    line-height: 1;
+                    width: 20px;
+                    height: 20px;
+                ">×</button>
+            </div>
+        `);
+
+        // 通知をページに追加
+        $('body').append(notification);
+
+        // 閉じるボタンのイベント
+        notification.find('.notice-dismiss').on('click', function() {
+            notification.fadeOut(300, function() {
+                $(this).remove();
+            });
+        });
+
+        // 成功メッセージは3秒後に自動で消す
+        if (type === 'success') {
+            setTimeout(function() {
+                notification.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
     }
 
 })(jQuery);
