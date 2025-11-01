@@ -165,6 +165,7 @@ class ANDW_News_Template_Manager {
             'sup' => ['class' => true],
             'br' => [],
             'hr' => ['class' => true],
+            '#comment' => [], // HTMLコメントを許可
         ];
 
         $template_data['html'] = wp_kses($template_data['html'], $allowed_tags);
@@ -172,7 +173,15 @@ class ANDW_News_Template_Manager {
         $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
 
         $templates[$template_name] = $template_data;
-        return update_option(self::TEMPLATES_OPTION, $templates);
+
+        // update_option は値が同じ場合 false を返すが、それも成功扱いとする
+        $result = update_option(self::TEMPLATES_OPTION, $templates);
+        if ($result === false) {
+            // 値が変更されなかった場合でも、実際に保存されているかチェック
+            $saved_templates = get_option(self::TEMPLATES_OPTION, []);
+            return isset($saved_templates[$template_name]) && $saved_templates[$template_name] === $template_data;
+        }
+        return true;
     }
 
     /**

@@ -258,7 +258,11 @@ class ANDW_News_Admin {
         }
 
         $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
-        $template_data = array_map('sanitize_textarea_field', wp_unslash($_POST['template_data'] ?? []));
+        $template_data = wp_unslash($_POST['template_data'] ?? []);
+        // 個別にサニタイズ（HTMLは生のまま template_manager へ）
+        $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
+        $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
+        // template_data['html'] は wp_kses で安全に処理されるため、ここではサニタイズしない
         $is_edit = !empty($_POST['is_edit']);
         $original_name = sanitize_text_field(wp_unslash($_POST['original_name'] ?? ''));
 
