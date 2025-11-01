@@ -30,8 +30,18 @@ class ANDW_News_Template_Manager {
     public function install_default_templates() {
         $templates = $this->get_templates();
 
-        // 既にテンプレートが存在する場合はスキップ
+        // 既存のテンプレートを新形式に変換
         if (!empty($templates)) {
+            $updated = false;
+            foreach ($templates as $key => $template) {
+                if (!isset($template['wrapper_html']) || !isset($template['item_html'])) {
+                    $templates[$key] = $this->convert_legacy_to_new($template);
+                    $updated = true;
+                }
+            }
+            if ($updated) {
+                update_option(self::TEMPLATES_OPTION, $templates);
+            }
             return;
         }
 
@@ -414,38 +424,21 @@ class ANDW_News_Template_Manager {
         return !empty($value);
     }
 
-    /**
-     * テンプレートタイプを判定（新形式 or 従来形式）
-     *
-     * @param array $template テンプレートデータ
-     * @return string 'new', 'legacy'
-     */
-    public function get_template_type($template) {
-        if (isset($template['wrapper_html']) && isset($template['item_html'])) {
-            return 'new';
-        } elseif (isset($template['html'])) {
-            return 'legacy';
-        }
-        return 'unknown';
-    }
 
     /**
-     * 複数投稿のレンダリング（新テンプレート形式）
+     * 複数投稿のレンダリング
      *
      * @param array $posts_data 投稿データ配列
      * @param array $template テンプレートデータ
      * @return string レンダリング結果
      */
     public function render_multiple_posts($posts_data, $template) {
-        $template_type = $this->get_template_type($template);
-
-        if ($template_type === 'new') {
-            return $this->render_new_template($posts_data, $template);
-        } elseif ($template_type === 'legacy') {
-            return $this->render_legacy_template($posts_data, $template);
+        // 新形式のテンプレートデータがない場合は、従来データから変換を試行
+        if (!isset($template['wrapper_html']) || !isset($template['item_html'])) {
+            $template = $this->convert_legacy_to_new($template);
         }
 
-        return '<div class="andw-news-error">Invalid template format</div>';
+        return $this->render_new_template($posts_data, $template);
     }
 
     /**
@@ -470,24 +463,6 @@ class ANDW_News_Template_Manager {
         return $wrapper_html;
     }
 
-    /**
-     * 従来テンプレート形式でレンダリング（後方互換性）
-     *
-     * @param array $posts_data 投稿データ配列
-     * @param array $template テンプレートデータ
-     * @return string レンダリング結果
-     */
-    private function render_legacy_template($posts_data, $template) {
-        $output = '';
-
-        // 従来通り各投稿にテンプレート全体を適用
-        foreach ($posts_data as $post_data) {
-            $post_html = $this->replace_tokens($template['html'], $post_data);
-            $output .= $post_html;
-        }
-
-        return $output;
-    }
 
     /**
      * 従来形式を新形式に自動変換
@@ -496,28 +471,21 @@ class ANDW_News_Template_Manager {
      * @return array 新形式のテンプレート
      */
     public function convert_legacy_to_new($template) {
-        if ($this->get_template_type($template) === 'new') {
+        if (isset($template['wrapper_html']) && isset($template['item_html'])) {
             return $template; // 既に新形式
         }
 
-        // 簡易的な自動変換（完全ではないが基本的なケースに対応）
-        $html = $template['html'];
-
-        // 最外側の要素を検出してwrapperとitemに分離
-        if (preg_match('/^<(\w+)[^>]*>(.*)<\/\1>$/s', trim($html), $matches)) {
-            $tag = $matches[1];
-            $inner_content = $matches[2];
-
-            // シンプルなケース: 単一のarticleやdivの場合
+        // デフォルトの新形式を設定
+        if (isset($template['html'])) {
+            // 従来のhtmlをitem_htmlとして使用
             $template['wrapper_html'] = '<div class="andw-news-wrapper">{items}</div>';
-            $template['item_html'] = $html;
+            $template['item_html'] = $template['html'];
         } else {
-            // 複雑な構造の場合はそのままitem_htmlとして使用
+            // 空のテンプレートの場合はデフォルト値を設定
             $template['wrapper_html'] = '<div class="andw-news-wrapper">{items}</div>';
-            $template['item_html'] = $html;
+            $template['item_html'] = '<div class="andw-news-item">{title}</div>';
         }
 
-        // 従来のhtmlフィールドは保持（後方互換性のため）
         return $template;
     }
 }

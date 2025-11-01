@@ -44,11 +44,18 @@ function andw_news_init() {
 
     // 各クラスを初期化
     new ANDW_News_Post_Type();
-    new ANDW_News_Template_Manager();
+    $template_manager = new ANDW_News_Template_Manager();
     new ANDW_News_Query_Handler();
     new ANDW_News_Shortcode();
     new ANDW_News_Admin();
     new ANDW_News_Gutenberg_Block();
+
+    // 管理画面でテンプレート変換を実行
+    if (is_admin()) {
+        add_action('admin_init', function() use ($template_manager) {
+            $template_manager->install_default_templates();
+        });
+    }
 }
 add_action('init', 'andw_news_init');
 

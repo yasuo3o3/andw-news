@@ -146,41 +146,22 @@
                                 <td><textarea id="template-description" class="large-text" rows="2">${templateData.description}</textarea></td>
                             </tr>
                             <tr>
-                                <th><label for="template-type">テンプレートタイプ</label></th>
-                                <td>
-                                    <select id="template-type" class="regular-text">
-                                        <option value="new" ${templateData.wrapper_html ? 'selected' : ''}>新形式（推奨）</option>
-                                        <option value="legacy" ${templateData.html && !templateData.wrapper_html ? 'selected' : ''}>従来形式</option>
-                                    </select>
-                                    <p class="description">新形式は複数投稿の表示で正しいHTML構造を生成します。</p>
-                                </td>
-                            </tr>
-                            <tr id="wrapper-html-row">
                                 <th><label for="template-wrapper-html">ラッパーHTML</label></th>
                                 <td>
-                                    <textarea id="template-wrapper-html" class="large-text code" rows="5">${templateData.wrapper_html || ''}</textarea>
+                                    <textarea id="template-wrapper-html" class="large-text code" rows="5" required>${templateData.wrapper_html || ''}</textarea>
                                     <p class="description">
                                         <strong>必須:</strong> {items} を含む必要があります。<br>
                                         <strong>例:</strong> &lt;ul class="news"&gt;{items}&lt;/ul&gt;
                                     </p>
                                 </td>
                             </tr>
-                            <tr id="item-html-row">
+                            <tr>
                                 <th><label for="template-item-html">アイテムHTML</label></th>
                                 <td>
-                                    <textarea id="template-item-html" class="large-text code" rows="8">${templateData.item_html || ''}</textarea>
+                                    <textarea id="template-item-html" class="large-text code" rows="8" required>${templateData.item_html || ''}</textarea>
                                     <p class="description">
                                         各投稿に適用されるテンプレート。<br>
                                         <strong>例:</strong> &lt;li&gt;&lt;a href="{link_url}"&gt;{title}&lt;/a&gt;&lt;/li&gt;
-                                    </p>
-                                </td>
-                            </tr>
-                            <tr id="legacy-html-row">
-                                <th><label for="template-html">HTMLテンプレート（従来形式）</label></th>
-                                <td>
-                                    <textarea id="template-html" class="large-text code" rows="15">${templateData.html || ''}</textarea>
-                                    <p class="description">
-                                        <strong>警告:</strong> 複数投稿で不正なHTML構造が生成される可能性があります。
                                     </p>
                                 </td>
                             </tr>
@@ -205,14 +186,6 @@
 
         $('body').append(html);
 
-        // テンプレートタイプ切り替えハンドラー
-        $('#template-type').on('change', function() {
-            toggleTemplateFields($(this).val());
-        });
-
-        // 初期状態設定
-        toggleTemplateFields($('#template-type').val());
-
         // イベントハンドラー
         $('#template-editor-form').on('submit', function(e) {
             e.preventDefault();
@@ -232,44 +205,17 @@
         });
     }
 
-    /**
-     * テンプレートフィールドの表示切り替え
-     */
-    function toggleTemplateFields(templateType) {
-        if (templateType === 'new') {
-            $('#wrapper-html-row').show();
-            $('#item-html-row').show();
-            $('#legacy-html-row').hide();
-            $('#template-wrapper-html').attr('required', true);
-            $('#template-item-html').attr('required', true);
-            $('#template-html').attr('required', false);
-        } else {
-            $('#wrapper-html-row').hide();
-            $('#item-html-row').hide();
-            $('#legacy-html-row').show();
-            $('#template-wrapper-html').attr('required', false);
-            $('#template-item-html').attr('required', false);
-            $('#template-html').attr('required', true);
-        }
-    }
 
     /**
      * テンプレートを保存
      */
     function saveTemplate(originalName, isEdit) {
-        const templateType = $('#template-type').val();
         const templateData = {
             name: $('#template-name').val(),
-            description: $('#template-description').val()
+            description: $('#template-description').val(),
+            wrapper_html: $('#template-wrapper-html').val(),
+            item_html: $('#template-item-html').val()
         };
-
-        // テンプレートタイプに応じてデータを追加
-        if (templateType === 'new') {
-            templateData.wrapper_html = $('#template-wrapper-html').val();
-            templateData.item_html = $('#template-item-html').val();
-        } else {
-            templateData.html = $('#template-html').val();
-        }
 
         const data = {
             action: 'andw_news_save_template',
