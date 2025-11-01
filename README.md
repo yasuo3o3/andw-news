@@ -1,4 +1,4 @@
-# andW News Changer
+# andW News
 
 **Contributors:** yasuo3o3
 **Tags:** news, custom-post-type, template, layout, shortcode
@@ -13,7 +13,7 @@
 
 ## Description
 
-andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグインです。
+andW Newsは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグインです。
 
 ### 主な機能
 
@@ -64,7 +64,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 テーマの以下のパスにCSSファイルを配置すると、プラグインのデフォルトCSSを上書きできます：
 
 ```
-/wp-content/themes/テーマ名/andw-news-changer/レイアウト名.css
+/wp-content/themes/テーマ名/andw-news/レイアウト名.css
 ```
 
 ### Smart Custom Fields 対応フィールド
@@ -79,7 +79,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 
 ## Installation
 
-1. プラグインファイルを `/wp-content/plugins/andw-news-changer/` ディレクトリにアップロード
+1. プラグインファイルを `/wp-content/plugins/andw-news/` ディレクトリにアップロード
 2. WordPress管理画面の「プラグイン」メニューでプラグインを有効化
 3. 「お知らせチェンジャー設定」メニューで設定を行う
 
@@ -151,7 +151,7 @@ andW News Changerは、カスタム投稿タイプ「andw-news」の記事を柔
 ### File Structure
 
 ```
-andw-news-changer/
+andw-news/
 ├── andw-news.php              # メインプラグインファイル
 ├── includes/                  # PHPクラスファイル
 │   ├── class-template-manager.php
@@ -186,8 +186,8 @@ andw-news-changer/
 
 ## Support
 
-- [Issues](https://github.com/yasuo3o3/andw-news-changer/issues)
-- [Documentation](https://docs.example.com/andw-news-changer)
+- [Issues](https://github.com/yasuo3o3/andw-news/issues)
+- [Documentation](https://docs.example.com/andw-news)
 
 ## Author
 

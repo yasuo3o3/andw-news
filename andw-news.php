@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: andW News Changer
+ * Plugin Name: andW News
  * Description: カスタム投稿タイプ「andw-news」の記事を様々なテンプレートで表示するプラグイン
  * Version: 0.0.2
  * Author: yasuo3o3

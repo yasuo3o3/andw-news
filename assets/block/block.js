@@ -1,5 +1,5 @@
 /**
- * andW News Changer Gutenberg Block
+ * andW News Gutenberg Block
  */
 
 (function() {

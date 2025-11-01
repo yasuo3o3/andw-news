@@ -1,5 +1,5 @@
 /**
- * andW News Changer - 管理画面JavaScript
+ * andW News - 管理画面JavaScript
  */
 
 (function($) {

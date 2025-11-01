@@ -1,5 +1,5 @@
 /**
- * andW News Changer - タブ機能JavaScript
+ * andW News - タブ機能JavaScript
  * jQuery不要の軽量実装
  */
 
