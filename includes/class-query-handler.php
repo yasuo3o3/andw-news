@@ -318,6 +318,11 @@ class ANDW_News_Query_Handler {
     private function get_custom_fields($post_id) {
         $custom_fields = [];
 
+        // デバッグログ
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("[andw-news] Getting custom fields for post ID: $post_id");
+        }
+
         // 明示的にチェックするandwフィールドのリスト
         $expected_fields = [
             'andw-news-pinned',
@@ -325,6 +330,7 @@ class ANDW_News_Query_Handler {
             'andw-internal-link',
             'andw-external-link',
             'andw-link-target',
+            'andw-target-blank',
             'andw-event-type',
             'andw-event-single-date',
             'andw-event-start-date',
@@ -339,11 +345,26 @@ class ANDW_News_Query_Handler {
 
             // SCFプラグインが有効な場合は SCF::get() も試す
             if (empty($field_value) && class_exists('SCF') && method_exists('SCF', 'get')) {
-                $field_value = SCF::get($field_key, $post_id);
+                $scf_value = SCF::get($field_key, $post_id);
+                if (!empty($scf_value)) {
+                    $field_value = $scf_value;
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("[andw-news] SCF value found for $field_key: $scf_value");
+                    }
+                }
             }
 
-            // 空でも配列に含める（テンプレートトークン置換のため）
-            $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
+            // HTMLエスケープ処理（ただし、URLや一部フィールドは除外）
+            $no_escape_fields = ['andw-external-link', 'andw-internal-link'];
+            if (in_array($field_key, $no_escape_fields)) {
+                $custom_fields[$field_key] = $field_value;
+            } else {
+                $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
+            }
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("[andw-news] Field $field_key = '" . $custom_fields[$field_key] . "'");
+            }
         }
 
         // その他のandwプレフィックスフィールドも取得
@@ -356,8 +377,16 @@ class ANDW_News_Query_Handler {
 
                     $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
                     $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
+
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("[andw-news] Additional field $meta_key = '" . $custom_fields[$meta_key] . "'");
+                    }
                 }
             }
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("[andw-news] Total custom fields retrieved: " . count($custom_fields));
         }
 
         return $custom_fields;

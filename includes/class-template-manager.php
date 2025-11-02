@@ -306,6 +306,12 @@ class ANDW_News_Template_Manager {
      * @return string 置換後のHTML
      */
     public function replace_tokens($html, $data) {
+        // デバッグログ：入力データを記録
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[andw-news] replace_tokens called with data: ' . print_r($data, true));
+            error_log('[andw-news] Original HTML length: ' . strlen($html));
+        }
+
         // 条件分岐を先に処理
         $html = $this->process_conditionals($html, $data);
 
@@ -334,7 +340,27 @@ class ANDW_News_Template_Manager {
             }
         }
 
-        return str_replace(array_keys($tokens), array_values($tokens), $html);
+        // デバッグログ：トークン情報を記録
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $token_summary = [];
+            foreach ($tokens as $token => $value) {
+                $token_summary[$token] = is_string($value) ? substr($value, 0, 50) : gettype($value);
+            }
+            error_log('[andw-news] Tokens to replace: ' . print_r($token_summary, true));
+        }
+
+        $result = str_replace(array_keys($tokens), array_values($tokens), $html);
+
+        // デバッグログ：結果を記録
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[andw-news] Final HTML length: ' . strlen($result));
+            // 残っている未処理のトークンをチェック
+            if (preg_match_all('/\{[^}]+\}/', $result, $matches)) {
+                error_log('[andw-news] Remaining unprocessed tokens: ' . implode(', ', array_unique($matches[0])));
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -485,51 +511,67 @@ class ANDW_News_Template_Manager {
      * @return string 処理後のHTML
      */
     private function process_conditionals($html, $data) {
-        // {if field_name}content{/if} 形式の条件分岐を処理
-        $pattern = '/\{if\s+([^}]+)\}(.*?)\{\/if\}/s';
+        // デバッグログ
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[andw-news] Processing conditionals for data: ' . print_r(array_keys($data), true));
+        }
 
-        $html = preg_replace_callback($pattern, function($matches) use ($data) {
-            $condition = trim($matches[1]);
-            $content = $matches[2];
+        // 処理の最大回数を制限（無限ループ防止）
+        $max_iterations = 10;
+        $iteration = 0;
 
-            // 条件を評価
-            if ($this->evaluate_condition($condition, $data)) {
-                return $content;
-            } else {
-                return '';
-            }
-        }, $html);
+        do {
+            $original_html = $html;
+            $iteration++;
 
-        // {ifnot field_name}content{/ifnot} 形式の否定条件を処理
-        $pattern_not = '/\{ifnot\s+([^}]+)\}(.*?)\{\/ifnot\}/s';
+            // 1. {if field_name}content{else}content{/if} 形式を最初に処理（優先度最高）
+            $pattern_else = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!\/if\}|else\}))*+)\{else\}((?:[^{]++|\{(?!\/if\}))*+)\{\/if\}/s';
+            $html = preg_replace_callback($pattern_else, function($matches) use ($data) {
+                $condition = trim($matches[1]);
+                $true_content = $matches[2];
+                $false_content = $matches[3];
 
-        $html = preg_replace_callback($pattern_not, function($matches) use ($data) {
-            $condition = trim($matches[1]);
-            $content = $matches[2];
+                $result = $this->evaluate_condition($condition, $data);
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("[andw-news] If-else condition '$condition' = " . ($result ? 'true' : 'false'));
+                }
 
-            // 条件を評価（否定）
-            if (!$this->evaluate_condition($condition, $data)) {
-                return $content;
-            } else {
-                return '';
-            }
-        }, $html);
+                return $result ? $true_content : $false_content;
+            }, $html);
 
-        // {if field_name}content{else}content{/if} 形式のif-else処理
-        $pattern_else = '/\{if\s+([^}]+)\}(.*?)\{else\}(.*?)\{\/if\}/s';
+            // 2. {ifnot field_name}content{/ifnot} 形式を処理
+            $pattern_not = '/\{ifnot\s+([^}]+)\}((?:[^{]++|\{(?!\/ifnot\}))*+)\{\/ifnot\}/s';
+            $html = preg_replace_callback($pattern_not, function($matches) use ($data) {
+                $condition = trim($matches[1]);
+                $content = $matches[2];
 
-        $html = preg_replace_callback($pattern_else, function($matches) use ($data) {
-            $condition = trim($matches[1]);
-            $true_content = $matches[2];
-            $false_content = $matches[3];
+                $result = !$this->evaluate_condition($condition, $data);
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("[andw-news] Ifnot condition '$condition' = " . ($result ? 'true' : 'false'));
+                }
 
-            // 条件を評価
-            if ($this->evaluate_condition($condition, $data)) {
-                return $true_content;
-            } else {
-                return $false_content;
-            }
-        }, $html);
+                return $result ? $content : '';
+            }, $html);
+
+            // 3. {if field_name}content{/if} 形式を最後に処理
+            $pattern = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!\/if\}|else\}))*+)\{\/if\}/s';
+            $html = preg_replace_callback($pattern, function($matches) use ($data) {
+                $condition = trim($matches[1]);
+                $content = $matches[2];
+
+                $result = $this->evaluate_condition($condition, $data);
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("[andw-news] If condition '$condition' = " . ($result ? 'true' : 'false'));
+                }
+
+                return $result ? $content : '';
+            }, $html);
+
+        } while ($html !== $original_html && $iteration < $max_iterations);
+
+        if ($iteration >= $max_iterations) {
+            error_log('[andw-news] WARNING: Maximum iterations reached in process_conditionals');
+        }
 
         return $html;
     }
@@ -542,20 +584,36 @@ class ANDW_News_Template_Manager {
      * @return bool 条件の結果
      */
     private function evaluate_condition($condition, $data) {
-        // 等値比較: field_name="value"
+        $condition = trim($condition);
+
+        // デバッグ用：利用可能なデータキーをログ出力
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[andw-news] Available data keys: ' . implode(', ', array_keys($data)));
+            error_log("[andw-news] Evaluating condition: '$condition'");
+        }
+
+        // 等値比較: field_name="value" または field_name='value'
         if (preg_match('/^([^=]+)=["\'](.*?)["\']$/', $condition, $matches)) {
             $field = trim($matches[1]);
             $expected_value = $matches[2];
             $actual_value = $data[$field] ?? '';
 
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("[andw-news] Equality check: field='$field', expected='$expected_value', actual='$actual_value'");
+            }
+
             return $actual_value === $expected_value;
         }
 
-        // 不等比較: field_name!="value"
+        // 不等比較: field_name!="value" または field_name!='value'
         if (preg_match('/^([^!]+)!=["\'](.*?)["\']$/', $condition, $matches)) {
             $field = trim($matches[1]);
             $expected_value = $matches[2];
             $actual_value = $data[$field] ?? '';
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("[andw-news] Inequality check: field='$field', expected!='$expected_value', actual='$actual_value'");
+            }
 
             return $actual_value !== $expected_value;
         }
@@ -564,7 +622,23 @@ class ANDW_News_Template_Manager {
         $field = trim($condition);
         $value = $data[$field] ?? '';
 
-        return !empty($value);
+        // 特殊な値の処理
+        $is_not_empty = false;
+        if (is_string($value)) {
+            $is_not_empty = $value !== '' && $value !== '0' && $value !== 'false';
+        } elseif (is_numeric($value)) {
+            $is_not_empty = $value != 0;
+        } elseif (is_bool($value)) {
+            $is_not_empty = $value;
+        } else {
+            $is_not_empty = !empty($value);
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("[andw-news] Existence check: field='$field', value='" . print_r($value, true) . "', result=" . ($is_not_empty ? 'true' : 'false'));
+        }
+
+        return $is_not_empty;
     }
 
 
