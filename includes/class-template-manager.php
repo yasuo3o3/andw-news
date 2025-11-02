@@ -327,6 +327,7 @@ class ANDW_News_Template_Manager {
             '{link_url}' => $data['link_url'] ?? '',
             '{link_target}' => $data['link_target'] ?? '_self',
             '{pinned}' => $data['pinned'] ?? false,
+            '{categories}' => $data['categories'] ?? '',
             '{andw-news-pinned}' => isset($data['andw-news-pinned']) ? $data['andw-news-pinned'] : ($data['pinned'] ? '1' : '0'),
         ];
 
