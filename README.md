@@ -24,6 +24,7 @@ andW Newsは、カスタム投稿タイプ「andw-news」の記事を柔軟な�
 - Smart Custom Fields（SCF）連携
 - テーマCSS上書き機能
 - ピン留め・優先表示機能
+- カテゴリーバッジ表示機能
 
 ### 使用方法
 
@@ -58,6 +59,7 @@ andW Newsは、カスタム投稿タイプ「andw-news」の記事を柔軟な�
 - `{event_date}` - イベント日付（SCFフィールド）
 - `{link_url}` - リンクURL
 - `{link_target}` - リンクターゲット
+- `{categories}` - カテゴリーバッジ（HTML形式）
 
 #### 日付フォーマット機能
 
@@ -90,6 +92,11 @@ PHPの日付フォーマット文字列も直接使用可能：
 ```html
 <li>
     <time datetime="{date:iso}">{date:jp}</time>
+    {if categories}
+        <div class="andw-categories-wrapper">
+            {categories}
+        </div>
+    {/if}
     <a href="{link_url}">{title}</a>
 </li>
 ```
