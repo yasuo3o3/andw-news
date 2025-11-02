@@ -165,7 +165,8 @@ class ANDW_News_Query_Handler {
             'link_url' => $this->get_post_link_url($post_id),
             'link_target' => $this->get_post_link_target($post_id),
             'event_date' => $this->get_event_date($post_id),
-            'pinned' => $this->is_post_pinned($post_id)
+            'pinned' => $this->is_post_pinned($post_id),
+            'categories' => $this->get_post_categories($post_id)
         ];
 
         // SCFフィールドを動的に追加
@@ -371,5 +372,24 @@ class ANDW_News_Query_Handler {
     private function is_post_pinned($post_id) {
         $pinned = get_post_meta($post_id, 'andw-news-pinned', true);
         return $pinned === '1' || $pinned === 1;
+    }
+
+    /**
+     * 投稿のカテゴリーを取得
+     *
+     * @param int $post_id 投稿ID
+     * @return string カテゴリーHTML
+     */
+    private function get_post_categories($post_id) {
+        $categories = get_the_terms($post_id, 'andw_news_category');
+        $categories_html = '';
+
+        if ($categories && !is_wp_error($categories)) {
+            foreach ($categories as $category) {
+                $categories_html .= '<span class="andw-category andw-category-' . esc_attr($category->slug) . '">' . esc_html($category->name) . '</span>';
+            }
+        }
+
+        return $categories_html;
     }
 }
