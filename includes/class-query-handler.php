@@ -410,7 +410,14 @@ class ANDW_News_Query_Handler {
      * @return string カテゴリーHTML
      */
     private function get_post_categories($post_id) {
-        $categories = get_the_terms($post_id, 'andw_news_category');
+        $categories = get_terms([
+            'taxonomy' => 'andw_news_category',
+            'object_ids' => $post_id,
+            'orderby' => 'menu_order',
+            'order' => 'ASC',
+            'hide_empty' => false
+        ]);
+
         $categories_html = '';
 
         if ($categories && !is_wp_error($categories)) {
