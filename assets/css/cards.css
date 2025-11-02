@@ -97,6 +97,10 @@
     margin-bottom: 12px;
 }
 
+.andw-categories-wrapper:empty {
+    display: none;
+}
+
 .andw-category {
     display: inline-block;
     padding: 4px 8px;

@@ -92,11 +92,9 @@ PHPの日付フォーマット文字列も直接使用可能：
 ```html
 <li>
     <time datetime="{date:iso}">{date:jp}</time>
-    {if categories}
-        <div class="andw-categories-wrapper">
-            {categories}
-        </div>
-    {/if}
+    <div class="andw-categories-wrapper">
+        {categories}
+    </div>
     <a href="{link_url}">{title}</a>
 </li>
 ```
@@ -129,9 +127,11 @@ PHPの日付フォーマット文字列も直接使用可能：
 **リンクタイプによる分岐:**
 ```html
 {if andw-link-type="none"}
+    <div class="andw-categories-wrapper">{categories}</div>
     {title}
 {/if}
 {if andw-link-type="external"}
+    <div class="andw-categories-wrapper">{categories}</div>
     <a href="{link_url}" target="{link_target}">{title}</a>
 {/if}
 ```

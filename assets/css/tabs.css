@@ -145,6 +145,10 @@
     margin-bottom: 8px;
 }
 
+.andw-categories-wrapper:empty {
+    display: none;
+}
+
 .andw-category {
     display: inline-block;
     padding: 3px 6px;
