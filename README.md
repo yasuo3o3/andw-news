@@ -101,6 +101,51 @@ PHPの日付フォーマット文字列も直接使用可能：
 </li>
 ```
 
+### カテゴリーバッジ機能
+
+各投稿に割り当てられたカテゴリーを色分けされたバッジとして表示できます。
+
+#### 利用可能なカテゴリー色
+
+- **news**: 青系バッジ（#e3f2fd / #1976d2）
+- **event**: 紫系バッジ（#f3e5f5 / #7b1fa2）
+- **info**: 緑系バッジ（#e8f5e8 / #388e3c）
+- **important**: 赤系バッジ（#ffebee / #d32f2f）
+- **notice**: オレンジ系バッジ（#fff3e0 / #f57c00）
+- その他: グレー系バッジ（デフォルト）
+
+#### カテゴリーバッジの出力例
+
+```html
+<div class="andw-categories-wrapper">
+  <span class="andw-category andw-category-news">ニュース</span>
+  <span class="andw-category andw-category-event">イベント</span>
+  <span class="andw-category andw-category-important">重要</span>
+</div>
+```
+
+#### SCFフィールド条件分岐の例
+
+**リンクタイプによる分岐:**
+```html
+{if andw-link-type="none"}
+    {title}
+{/if}
+{if andw-link-type="external"}
+    <a href="{link_url}" target="{link_target}">{title}</a>
+{/if}
+```
+
+**イベント日付による分岐:**
+```html
+{if andw-event-type="single"}
+    {andw-event-single-date}
+{/if}
+{if andw-event-type="period"}
+    {andw-event-start-date} - {andw-event-end-date}
+{/if}
+```
+
 ### CSS上書き
 
 テーマの以下のパスにCSSファイルを配置すると、プラグインのデフォルトCSSを上書きできます：
