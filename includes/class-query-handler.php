@@ -413,7 +413,7 @@ class ANDW_News_Query_Handler {
         $categories = get_terms([
             'taxonomy' => 'andw_news_category',
             'object_ids' => $post_id,
-            'orderby' => 'menu_order',
+            'orderby' => 'term_order',
             'order' => 'ASC',
             'hide_empty' => false
         ]);
