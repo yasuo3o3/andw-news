@@ -120,8 +120,9 @@ class ANDW_News_Shortcode {
      */
     private function render_tabs_layout($query_handler, $args) {
         $categorized_posts = $query_handler->get_news_by_categories($args);
+        $all_posts = $query_handler->get_all_news_for_tabs($args);
 
-        if (empty($categorized_posts)) {
+        if (empty($all_posts)) {
             return '<div class="andw-news-empty">' . esc_html__('お知らせはありません。', 'andw-news') . '</div>';
         }
 
@@ -136,46 +137,48 @@ class ANDW_News_Shortcode {
 
         // タブナビゲーション
         $output .= '<ul class="andw-tabs__nav" role="tablist">';
-        $first_tab = true;
-        foreach ($categorized_posts as $index => $category_data) {
+
+        // 「すべて」タブ
+        $output .= sprintf(
+            '<li class="andw-tabs__nav-item andw-tabs__nav-item--active" role="tab" aria-controls="andw-tab-all" aria-selected="true" tabindex="0" data-tab-target="andw-tab-all">%s</li>',
+            esc_html__('すべて', 'andw-news')
+        );
+
+        // カテゴリータブ
+        foreach ($categorized_posts as $category_data) {
             $tab_id = 'andw-tab-' . $category_data['category']->term_id;
-            $active_class = $first_tab ? ' andw-tabs__nav-item--active' : '';
-            $aria_selected = $first_tab ? 'true' : 'false';
 
             $output .= sprintf(
-                '<li class="andw-tabs__nav-item%s" role="tab" aria-controls="%s" aria-selected="%s" tabindex="%s" data-tab-target="%s">%s</li>',
-                esc_attr($active_class),
+                '<li class="andw-tabs__nav-item" role="tab" aria-controls="%s" aria-selected="false" tabindex="-1" data-tab-target="%s">%s</li>',
                 esc_attr($tab_id),
-                esc_attr($aria_selected),
-                $first_tab ? '0' : '-1',
                 esc_attr($tab_id),
                 esc_html($category_data['category']->name)
             );
-
-            $first_tab = false;
         }
         $output .= '</ul>';
 
         // タブコンテンツ
         $output .= '<div class="andw-tabs__content">';
-        $first_tab = true;
+
+        // 「すべて」タブのコンテンツ
+        $output .= '<div class="andw-tabs__pane andw-tabs__pane--active" id="andw-tab-all" role="tabpanel" aria-hidden="false">';
+        $all_content = $template_manager->render_multiple_posts($all_posts, $tab_template);
+        $output .= $all_content;
+        $output .= '</div>';
+
+        // カテゴリータブのコンテンツ
         foreach ($categorized_posts as $category_data) {
             $tab_id = 'andw-tab-' . $category_data['category']->term_id;
-            $active_class = $first_tab ? ' andw-tabs__pane--active' : '';
 
             $output .= sprintf(
-                '<div class="andw-tabs__pane%s" id="%s" role="tabpanel" aria-hidden="%s">',
-                esc_attr($active_class),
-                esc_attr($tab_id),
-                $first_tab ? 'false' : 'true'
+                '<div class="andw-tabs__pane" id="%s" role="tabpanel" aria-hidden="true">',
+                esc_attr($tab_id)
             );
 
-            // 新しいテンプレートシステムを使用してカテゴリ内の投稿をレンダリング
             $category_content = $template_manager->render_multiple_posts($category_data['posts'], $tab_template);
             $output .= $category_content;
 
             $output .= '</div>';
-            $first_tab = false;
         }
         $output .= '</div>';
 

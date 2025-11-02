@@ -114,6 +114,8 @@ class ANDW_News_Query_Handler {
     public function get_news_by_categories($args = []) {
         $categories = get_terms([
             'taxonomy' => 'andw_news_category',
+            'orderby' => 'term_order',
+            'order' => 'ASC',
             'hide_empty' => true
         ]);
 
@@ -139,6 +141,16 @@ class ANDW_News_Query_Handler {
         }
 
         return $categorized_posts;
+    }
+
+    /**
+     * 「すべて」タブ用の全投稿を取得
+     *
+     * @param array $args 取得パラメータ
+     * @return array 投稿データ配列
+     */
+    public function get_all_news_for_tabs($args = []) {
+        return $this->get_news_posts($args);
     }
 
     /**
