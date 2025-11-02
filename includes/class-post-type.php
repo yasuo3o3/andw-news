@@ -68,17 +68,17 @@ class ANDW_News_Post_Type {
      */
     public function register_taxonomy() {
         $labels = [
-            'name' => __('お知らせカテゴリ', 'andw-news'),
-            'singular_name' => __('カテゴリ', 'andw-news'),
-            'search_items' => __('カテゴリを検索', 'andw-news'),
-            'all_items' => __('すべてのカテゴリ', 'andw-news'),
-            'parent_item' => __('親カテゴリ', 'andw-news'),
-            'parent_item_colon' => __('親カテゴリ:', 'andw-news'),
-            'edit_item' => __('カテゴリを編集', 'andw-news'),
-            'update_item' => __('カテゴリを更新', 'andw-news'),
-            'add_new_item' => __('新しいカテゴリを追加', 'andw-news'),
-            'new_item_name' => __('新しいカテゴリ名', 'andw-news'),
-            'menu_name' => __('カテゴリ', 'andw-news')
+            'name' => __('お知らせカテゴリー', 'andw-news'),
+            'singular_name' => __('カテゴリー', 'andw-news'),
+            'search_items' => __('カテゴリーを検索', 'andw-news'),
+            'all_items' => __('すべてのカテゴリー', 'andw-news'),
+            'parent_item' => __('親カテゴリー', 'andw-news'),
+            'parent_item_colon' => __('親カテゴリー:', 'andw-news'),
+            'edit_item' => __('カテゴリーを編集', 'andw-news'),
+            'update_item' => __('カテゴリーを更新', 'andw-news'),
+            'add_new_item' => __('新しいカテゴリーを追加', 'andw-news'),
+            'new_item_name' => __('新しいカテゴリー名', 'andw-news'),
+            'menu_name' => __('カテゴリー', 'andw-news')
         ];
 
         $args = [
