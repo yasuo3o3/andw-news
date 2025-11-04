@@ -2,7 +2,7 @@
 Contributors: yasuo3o3
 Tags: news, custom-post-type, template, layout, shortcode
 Requires at least: 6.5
-Tested up to: 6.6
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 0.0.2
 License: GPLv2 or later
