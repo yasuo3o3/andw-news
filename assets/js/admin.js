@@ -142,11 +142,27 @@
                         <table class="form-table">
                             <tr>
                                 <th><label for="template-name">テンプレート名</label></th>
-                                <td><input type="text" id="template-name" value="${templateData.name}" class="regular-text" required></td>
+                                <td>
+                                    <input type="text" id="template-name" value="${templateData.name}" class="regular-text" required>
+                                    <p class="description">分かりやすいテンプレート名を入力してください。（日本語OK）</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="template-slug">スラグ</label></th>
+                                <td>
+                                    <input type="text" id="template-slug" value="${templateData.slug || ''}" class="regular-text" pattern="[a-zA-Z0-9\-_]+" placeholder="英数字・ハイフン・アンダースコアのみ">
+                                    <p class="description">
+                                        CSSクラス名に使用されます。空の場合は名前から自動生成されます。<br>
+                                        <strong>例:</strong> thumbnail-card → .andw-news--thumbnail-card
+                                    </p>
+                                </td>
                             </tr>
                             <tr>
                                 <th><label for="template-description">説明</label></th>
-                                <td><textarea id="template-description" class="large-text" rows="2">${templateData.description}</textarea></td>
+                                <td>
+                                    <textarea id="template-description" class="large-text" rows="2">${templateData.description}</textarea>
+                                    <p class="description">このテンプレートの用途や特徴を説明してください。</p>
+                                </td>
                             </tr>
                             <tr>
                                 <th><label for="template-wrapper-html">ラッパーHTML</label></th>
@@ -173,8 +189,9 @@
                                 <td>
                                     <textarea id="template-css" class="large-text code" rows="6">${templateData.css || ''}</textarea>
                                     <p class="description">
-                                        <strong>対象クラス:</strong> .andw-news--${templateName || 'template'}<br>
-                                        このテンプレート専用のCSSを記述できます。@importやjavascript:は自動的に除去されます。
+                                        <strong>対象クラス:</strong> .andw-news--<span id="css-target-slug">${templateData.slug || templateName || 'template'}</span><br>
+                                        このテンプレート専用のCSSを記述できます。@importやjavascript:は自動的に除去されます。<br>
+                                        スラグを変更すると対象クラスも自動更新されます。
                                     </p>
                                 </td>
                             </tr>
@@ -207,6 +224,19 @@
 
         // 保存完了フラグ
         let saveCompleted = false;
+
+        // スラグ入力時の対象クラス表示更新
+        $('#template-slug').on('input', function() {
+            const slug = $(this).val() || $('#template-name').val() || 'template';
+            $('#css-target-slug').text(slug);
+        });
+
+        // テンプレート名が変更された場合もスラグが空なら表示を更新
+        $('#template-name').on('input', function() {
+            if (!$('#template-slug').val()) {
+                $('#css-target-slug').text($(this).val() || 'template');
+            }
+        });
 
         // イベントハンドラー
         $('#template-editor-form').on('submit', function(e) {
@@ -244,6 +274,7 @@
     function saveTemplate(originalName, isEdit, onSaveCallback) {
         const templateData = {
             name: $('#template-name').val(),
+            slug: $('#template-slug').val(),
             description: $('#template-description').val(),
             wrapper_html: $('#template-wrapper-html').val(),
             item_html: $('#template-item-html').val(),

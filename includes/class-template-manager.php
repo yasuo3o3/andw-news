@@ -34,8 +34,21 @@ class ANDW_News_Template_Manager {
         if (!empty($templates)) {
             $updated = false;
             foreach ($templates as $key => $template) {
+                $template_updated = false;
+
+                // 旧形式から新形式への変換
                 if (!isset($template['wrapper_html']) || !isset($template['item_html'])) {
                     $templates[$key] = $this->convert_legacy_to_new($template);
+                    $template_updated = true;
+                }
+
+                // スラグがない場合は追加
+                if (!isset($template['slug'])) {
+                    $templates[$key]['slug'] = $this->generate_slug_from_name($template['name'] ?? $key);
+                    $template_updated = true;
+                }
+
+                if ($template_updated) {
                     $updated = true;
                 }
             }
@@ -48,6 +61,7 @@ class ANDW_News_Template_Manager {
         $default_templates = [
             'list' => [
                 'name' => 'リスト',
+                'slug' => 'list',
                 'wrapper_html' => '<div class="andw-news-list">{items}</div>',
                 'item_html' => '<article class="andw-news-item{if pinned} andw-news-item--pinned{/if}">
                         <div class="andw-news-content">
@@ -63,6 +77,7 @@ class ANDW_News_Template_Manager {
             ],
             'cards' => [
                 'name' => 'カード',
+                'slug' => 'cards',
                 'wrapper_html' => '<div class="andw-news-cards">{items}</div>',
                 'item_html' => '<div class="andw-news-card{if pinned} andw-news-card--pinned{/if}">
                         <div class="andw-news-card-thumbnail">{thumbnail}</div>
@@ -80,6 +95,7 @@ class ANDW_News_Template_Manager {
             ],
             'tabs' => [
                 'name' => 'タブ',
+                'slug' => 'tabs',
                 'wrapper_html' => '<div class="andw-news-tab-content">{items}</div>',
                 'item_html' => '<article class="andw-news-tab-item{if pinned} andw-news-tab-item--pinned{/if}">
                         <div class="andw-news-tab-meta">
@@ -94,6 +110,7 @@ class ANDW_News_Template_Manager {
             ],
             'ul_list' => [
                 'name' => 'ULリスト',
+                'slug' => 'ul-list',
                 'wrapper_html' => '<ul class="news">{items}</ul>',
                 'item_html' => '<li>
                         <time datetime="{date}">{date}</time>
@@ -197,6 +214,9 @@ class ANDW_News_Template_Manager {
 
         $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
         $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
+
+        // スラグの処理
+        $template_data['slug'] = $this->sanitize_template_slug($template_data['slug'] ?? '', $template_data['name'], $template_name);
 
         // カスタムCSSをサニタイズ
         if (isset($template_data['css'])) {
@@ -677,5 +697,173 @@ class ANDW_News_Template_Manager {
 
         // 基本的なサニタイゼーション
         return wp_kses_no_html(sanitize_textarea_field($css));
+    }
+
+    /**
+     * テンプレートスラグをサニタイズ・生成
+     *
+     * @param string $slug 入力されたスラグ
+     * @param string $name テンプレート名
+     * @param string $template_name 既存のテンプレートキー
+     * @return string サニタイズ済みスラグ
+     */
+    private function sanitize_template_slug($slug, $name, $template_name) {
+        // スラグが空の場合は名前から自動生成
+        if (empty($slug)) {
+            $slug = $this->generate_slug_from_name($name);
+        }
+
+        // スラグをサニタイズ（英数字・ハイフン・アンダースコアのみ）
+        $slug = sanitize_title($slug);
+        $slug = preg_replace('/[^a-z0-9\-_]/i', '', $slug);
+
+        // 空になった場合はデフォルト値
+        if (empty($slug)) {
+            $slug = 'template-' . uniqid();
+        }
+
+        // 重複チェック（自分自身は除外）
+        $slug = $this->ensure_unique_slug($slug, $template_name);
+
+        return $slug;
+    }
+
+    /**
+     * 名前からスラグを生成
+     *
+     * @param string $name テンプレート名
+     * @return string 生成されたスラグ
+     */
+    private function generate_slug_from_name($name) {
+        // 基本的な置換ルール
+        $replacements = [
+            'サムネイルカード' => 'thumbnail-card',
+            'サムネイル' => 'thumbnail',
+            'カード' => 'card',
+            'リスト' => 'list',
+            'タブ' => 'tabs',
+            'ニュース' => 'news',
+            'お知らせ' => 'notice',
+            'イベント' => 'event',
+            'ブログ' => 'blog',
+            'アーカイブ' => 'archive',
+            'グリッド' => 'grid',
+            'マガジン' => 'magazine'
+        ];
+
+        $slug = $name;
+
+        // 日本語から英語への変換
+        foreach ($replacements as $jp => $en) {
+            $slug = str_replace($jp, $en, $slug);
+        }
+
+        // 残った日本語をローマ字化（簡易版）
+        $slug = $this->japanese_to_romaji($slug);
+
+        // WordPressのsanitize_title関数を使用
+        $slug = sanitize_title($slug);
+
+        return $slug ?: 'template';
+    }
+
+    /**
+     * 簡易的な日本語→ローマ字変換
+     *
+     * @param string $text 日本語テキスト
+     * @return string ローマ字
+     */
+    private function japanese_to_romaji($text) {
+        // ひらがな・カタカナの基本的な変換テーブル
+        $romaji_map = [
+            'あ' => 'a', 'い' => 'i', 'う' => 'u', 'え' => 'e', 'お' => 'o',
+            'か' => 'ka', 'き' => 'ki', 'く' => 'ku', 'け' => 'ke', 'こ' => 'ko',
+            'が' => 'ga', 'ぎ' => 'gi', 'ぐ' => 'gu', 'げ' => 'ge', 'ご' => 'go',
+            'さ' => 'sa', 'し' => 'shi', 'す' => 'su', 'せ' => 'se', 'そ' => 'so',
+            'ざ' => 'za', 'じ' => 'ji', 'ず' => 'zu', 'ぜ' => 'ze', 'ぞ' => 'zo',
+            'た' => 'ta', 'ち' => 'chi', 'つ' => 'tsu', 'て' => 'te', 'と' => 'to',
+            'だ' => 'da', 'ぢ' => 'di', 'づ' => 'du', 'で' => 'de', 'ど' => 'do',
+            'な' => 'na', 'に' => 'ni', 'ぬ' => 'nu', 'ね' => 'ne', 'の' => 'no',
+            'は' => 'ha', 'ひ' => 'hi', 'ふ' => 'fu', 'へ' => 'he', 'ほ' => 'ho',
+            'ば' => 'ba', 'び' => 'bi', 'ぶ' => 'bu', 'べ' => 'be', 'ぼ' => 'bo',
+            'ぱ' => 'pa', 'ぴ' => 'pi', 'ぷ' => 'pu', 'ぺ' => 'pe', 'ぽ' => 'po',
+            'ま' => 'ma', 'み' => 'mi', 'む' => 'mu', 'め' => 'me', 'も' => 'mo',
+            'や' => 'ya', 'ゆ' => 'yu', 'よ' => 'yo',
+            'ら' => 'ra', 'り' => 'ri', 'る' => 'ru', 'れ' => 're', 'ろ' => 'ro',
+            'わ' => 'wa', 'ゐ' => 'wi', 'ゑ' => 'we', 'を' => 'wo', 'ん' => 'n',
+            // カタカナ
+            'ア' => 'a', 'イ' => 'i', 'ウ' => 'u', 'エ' => 'e', 'オ' => 'o',
+            'カ' => 'ka', 'キ' => 'ki', 'ク' => 'ku', 'ケ' => 'ke', 'コ' => 'ko',
+            'ガ' => 'ga', 'ギ' => 'gi', 'グ' => 'gu', 'ゲ' => 'ge', 'ゴ' => 'go',
+            'サ' => 'sa', 'シ' => 'shi', 'ス' => 'su', 'セ' => 'se', 'ソ' => 'so',
+            'ザ' => 'za', 'ジ' => 'ji', 'ズ' => 'zu', 'ゼ' => 'ze', 'ゾ' => 'zo',
+            'タ' => 'ta', 'チ' => 'chi', 'ツ' => 'tsu', 'テ' => 'te', 'ト' => 'to',
+            'ダ' => 'da', 'ヂ' => 'di', 'ヅ' => 'du', 'デ' => 'de', 'ド' => 'do',
+            'ナ' => 'na', 'ニ' => 'ni', 'ヌ' => 'nu', 'ネ' => 'ne', 'ノ' => 'no',
+            'ハ' => 'ha', 'ヒ' => 'hi', 'フ' => 'fu', 'ヘ' => 'he', 'ホ' => 'ho',
+            'バ' => 'ba', 'ビ' => 'bi', 'ブ' => 'bu', 'ベ' => 'be', 'ボ' => 'bo',
+            'パ' => 'pa', 'ピ' => 'pi', 'プ' => 'pu', 'ペ' => 'pe', 'ポ' => 'po',
+            'マ' => 'ma', 'ミ' => 'mi', 'ム' => 'mu', 'メ' => 'me', 'モ' => 'mo',
+            'ヤ' => 'ya', 'ユ' => 'yu', 'ヨ' => 'yo',
+            'ラ' => 'ra', 'リ' => 'ri', 'ル' => 'ru', 'レ' => 're', 'ロ' => 'ro',
+            'ワ' => 'wa', 'ヰ' => 'wi', 'ヱ' => 'we', 'ヲ' => 'wo', 'ン' => 'n'
+        ];
+
+        return str_replace(array_keys($romaji_map), array_values($romaji_map), $text);
+    }
+
+    /**
+     * 重複しないスラグを確保
+     *
+     * @param string $slug 希望するスラグ
+     * @param string $exclude_template 除外するテンプレート名
+     * @return string 重複しないスラグ
+     */
+    private function ensure_unique_slug($slug, $exclude_template = '') {
+        $templates = $this->get_templates();
+        $original_slug = $slug;
+        $counter = 1;
+
+        while ($this->slug_exists($slug, $templates, $exclude_template)) {
+            $slug = $original_slug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    /**
+     * スラグが既存テンプレートで使用されているかチェック
+     *
+     * @param string $slug チェックするスラグ
+     * @param array $templates テンプレート配列
+     * @param string $exclude_template 除外するテンプレート名
+     * @return bool 使用されている場合true
+     */
+    private function slug_exists($slug, $templates, $exclude_template = '') {
+        foreach ($templates as $template_name => $template_data) {
+            if ($template_name === $exclude_template) {
+                continue;
+            }
+            if (isset($template_data['slug']) && $template_data['slug'] === $slug) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * テンプレートのスラグを取得
+     *
+     * @param string $template_name テンプレート名
+     * @return string スラグ
+     */
+    public function get_template_slug($template_name) {
+        $templates = $this->get_templates();
+        if (isset($templates[$template_name]['slug'])) {
+            return $templates[$template_name]['slug'];
+        }
+        // フォールバック: 名前からスラグを生成
+        return $this->generate_slug_from_name($templates[$template_name]['name'] ?? $template_name);
     }
 }

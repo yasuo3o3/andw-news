@@ -104,8 +104,11 @@ class ANDW_News_Shortcode {
         // 新しいテンプレートシステムを使用してレンダリング
         $rendered_content = $template_manager->render_multiple_posts($posts, $template);
 
-        // レイアウトクラスでラップ
-        $output = '<div class="andw-news-wrapper andw-news-layout-' . esc_attr($layout) . ' andw-news--' . esc_attr($layout) . '">';
+        // テンプレートのスラグを取得
+        $template_slug = $template_manager->get_template_slug($layout);
+
+        // レイアウトクラスでラップ（スラグベース）
+        $output = '<div class="andw-news-wrapper andw-news-layout-' . esc_attr($layout) . ' andw-news--' . esc_attr($template_slug) . '">';
         $output .= $rendered_content;
         $output .= '</div>';
 
@@ -134,7 +137,10 @@ class ANDW_News_Shortcode {
             return '<div class="andw-news-error">' . esc_html__('タブテンプレートが見つかりません。', 'andw-news') . '</div>';
         }
 
-        $output = '<div class="andw-tabs andw-news--tabs" data-andw-tabs>';
+        // タブテンプレートのスラグを取得
+        $tabs_slug = $template_manager->get_template_slug('tabs');
+
+        $output = '<div class="andw-tabs andw-news--' . esc_attr($tabs_slug) . '" data-andw-tabs>';
 
         // タブナビゲーション
         $output .= '<ul class="andw-tabs__nav" role="tablist">';
