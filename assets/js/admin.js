@@ -9,6 +9,7 @@
         initTemplatePreview();
         initTemplateActions();
         initCacheActions();
+        initDefaultThumbnail();
     });
 
     /**
@@ -636,13 +637,5 @@
             });
         }
     }
-
-    // デフォルトサムネイル機能を初期化に追加
-    $(document).ready(function() {
-        initTemplatePreview();
-        initTemplateActions();
-        initCacheActions();
-        initDefaultThumbnail(); // 追加
-    });
 
 })(jQuery);
