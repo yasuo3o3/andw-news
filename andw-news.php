@@ -198,10 +198,13 @@ function andw_news_admin_assets($hook) {
         return;
     }
 
+    // WordPressメディアライブラリを有効化
+    wp_enqueue_media();
+
     wp_enqueue_script(
         'andw-news-admin',
         ANDW_NEWS_PLUGIN_URL . 'assets/js/admin.js',
-        ['jquery'],
+        ['jquery', 'wp-media'],
         ANDW_NEWS_VERSION,
         true
     );
