@@ -440,8 +440,8 @@ class ANDW_News_Admin {
         $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
         $template_data = map_deep(wp_unslash($_POST['template_data'] ?? []), 'sanitize_text_field');
 
-        // HTMLフィールドは生データとして復元（wp_ksesで後処理される）
         if (isset($_POST['template_data']['html'])) {
+            // HTMLフィールドは生データとして復元（wp_ksesで後処理される）
             $template_data['html'] = wp_unslash($_POST['template_data']['html']);
         }
 
