@@ -177,7 +177,7 @@ function andw_news_register_assets() {
                 }
             }
         }
-    }
+    } // else ブロックの終了
 
     if ($should_load_tabs) {
         wp_enqueue_script(
