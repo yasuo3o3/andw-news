@@ -158,7 +158,7 @@ class ANDW_News_Template_Manager {
             'a' => ['href' => true, 'class' => true, 'id' => true, 'target' => true, 'rel' => true],
             'span' => ['class' => true, 'id' => true, 'data-*' => true],
             'time' => ['class' => true, 'id' => true, 'datetime' => true],
-            'img' => ['src' => true, 'alt' => true, 'class' => true, 'id' => true, 'width' => true, 'height' => true, 'loading' => true],
+            'img' => ['src' => true, 'alt' => true, 'class' => true, 'id' => true, 'width' => true, 'height' => true, 'loading' => true, 'fetchpriority' => true, 'decoding' => true, 'srcset' => true, 'sizes' => true],
             'figure' => ['class' => true, 'id' => true],
             'figcaption' => ['class' => true, 'id' => true],
             'blockquote' => ['class' => true, 'id' => true, 'cite' => true],
