@@ -571,4 +571,78 @@
         });
     }
 
+    /**
+     * デフォルトサムネイル機能を初期化
+     */
+    function initDefaultThumbnail() {
+        // WordPressメディアライブラリが利用可能な場合のみ実行
+        if (typeof wp !== 'undefined' && wp.media) {
+            var defaultThumbnailFrame;
+
+            // 画像選択ボタン
+            $(document).on('click', '#select-thumbnail', function(e) {
+                e.preventDefault();
+
+                if (defaultThumbnailFrame) {
+                    defaultThumbnailFrame.open();
+                    return;
+                }
+
+                defaultThumbnailFrame = wp.media({
+                    title: 'デフォルトサムネイル画像を選択',
+                    button: {
+                        text: '選択'
+                    },
+                    multiple: false,
+                    library: {
+                        type: 'image'
+                    }
+                });
+
+                defaultThumbnailFrame.on('select', function() {
+                    var attachment = defaultThumbnailFrame.state().get('selection').first().toJSON();
+
+                    // 隠しフィールドに画像IDを設定
+                    $('#default-thumbnail-id').val(attachment.id);
+
+                    // プレビューを更新
+                    var imageUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+                    var imageHtml = '<img src="' + imageUrl + '" style="max-width: 200px; height: auto;" alt="' + (attachment.alt || 'デフォルトサムネイル') + '">';
+                    $('#default-thumbnail-preview').html(imageHtml);
+
+                    // 削除ボタンを表示
+                    if ($('#remove-thumbnail').length === 0) {
+                        $('#select-thumbnail').after('<button type="button" id="remove-thumbnail" class="button" style="margin-left: 10px;">画像を削除</button>');
+                    } else {
+                        $('#remove-thumbnail').show();
+                    }
+                });
+
+                defaultThumbnailFrame.open();
+            });
+
+            // 画像削除ボタン（動的に追加される要素のためdelegated event）
+            $(document).on('click', '#remove-thumbnail', function(e) {
+                e.preventDefault();
+
+                // 隠しフィールドをクリア
+                $('#default-thumbnail-id').val('0');
+
+                // プレビューをクリア
+                $('#default-thumbnail-preview').html('<p class="description">デフォルト画像が設定されていません。</p>');
+
+                // 削除ボタンを非表示
+                $(this).hide();
+            });
+        }
+    }
+
+    // デフォルトサムネイル機能を初期化に追加
+    $(document).ready(function() {
+        initTemplatePreview();
+        initTemplateActions();
+        initCacheActions();
+        initDefaultThumbnail(); // 追加
+    });
+
 })(jQuery);

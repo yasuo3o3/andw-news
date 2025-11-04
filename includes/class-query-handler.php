@@ -212,6 +212,13 @@ class ANDW_News_Query_Handler {
         if (has_post_thumbnail($post_id)) {
             return get_the_post_thumbnail($post_id, 'medium', ['class' => 'andw-news-thumbnail']);
         }
+
+        // デフォルトサムネイルを取得
+        $default_thumbnail_id = get_option('andw_news_default_thumbnail', 0);
+        if ($default_thumbnail_id && wp_attachment_is_image($default_thumbnail_id)) {
+            return wp_get_attachment_image($default_thumbnail_id, 'medium', false, ['class' => 'andw-news-thumbnail default']);
+        }
+
         return '';
     }
 

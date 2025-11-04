@@ -59,6 +59,7 @@ class ANDW_News_Admin {
         $templates = $template_manager->get_templates();
         $default_template = $template_manager->get_default_template();
         $disable_css = get_option('andw_news_disable_css', false);
+        $default_thumbnail_id = get_option('andw_news_default_thumbnail', 0);
 
         // 重複テンプレート検出
         $duplicates = $this->detect_duplicate_templates($templates);
@@ -142,6 +143,51 @@ class ANDW_News_Admin {
                             <p class="submit">
                                 <input type="submit" name="save_css_settings" class="button button-primary"
                                        value="<?php echo esc_attr__('CSS設定を保存', 'andw-news'); ?>" />
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- デフォルトサムネイル設定 -->
+                    <div class="card">
+                        <h2 class="title"><?php echo esc_html__('デフォルトサムネイル設定', 'andw-news'); ?></h2>
+
+                        <form method="post" action="">
+                            <?php wp_nonce_field('andw_news_thumbnail_settings', 'andw_news_thumbnail_nonce'); ?>
+
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row"><?php echo esc_html__('デフォルト画像', 'andw-news'); ?></th>
+                                    <td>
+                                        <div id="default-thumbnail-preview" style="margin-bottom: 10px;">
+                                            <?php if ($default_thumbnail_id): ?>
+                                                <?php echo wp_get_attachment_image($default_thumbnail_id, 'medium', false, ['style' => 'max-width: 200px; height: auto;']); ?>
+                                            <?php else: ?>
+                                                <p class="description"><?php echo esc_html__('デフォルト画像が設定されていません。', 'andw-news'); ?></p>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <input type="hidden" id="default-thumbnail-id" name="default_thumbnail_id" value="<?php echo esc_attr($default_thumbnail_id); ?>" />
+
+                                        <button type="button" id="select-thumbnail" class="button">
+                                            <?php echo esc_html__('画像を選択', 'andw-news'); ?>
+                                        </button>
+
+                                        <?php if ($default_thumbnail_id): ?>
+                                            <button type="button" id="remove-thumbnail" class="button" style="margin-left: 10px;">
+                                                <?php echo esc_html__('画像を削除', 'andw-news'); ?>
+                                            </button>
+                                        <?php endif; ?>
+
+                                        <p class="description">
+                                            <?php echo esc_html__('アイキャッチ画像が設定されていない投稿で使用されるデフォルト画像です。', 'andw-news'); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p class="submit">
+                                <input type="submit" name="save_thumbnail_settings" class="button button-primary"
+                                       value="<?php echo esc_attr__('デフォルトサムネイル設定を保存', 'andw-news'); ?>" />
                             </p>
                         </form>
                     </div>
@@ -272,6 +318,34 @@ class ANDW_News_Admin {
                      esc_html__('CSS設定を保存しました。', 'andw-news') . '</p></div>';
             });
         }
+
+        // デフォルトサムネイル設定の保存
+        if (isset($_POST['save_thumbnail_settings']) && isset($_POST['andw_news_thumbnail_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['andw_news_thumbnail_nonce'])), 'andw_news_thumbnail_settings')) {
+            $thumbnail_id = isset($_POST['default_thumbnail_id']) ? intval(wp_unslash($_POST['default_thumbnail_id'])) : 0;
+
+            if ($thumbnail_id > 0) {
+                // 画像IDが有効かチェック
+                if (wp_attachment_is_image($thumbnail_id)) {
+                    update_option('andw_news_default_thumbnail', $thumbnail_id);
+                    add_action('admin_notices', function() {
+                        echo '<div class="notice notice-success is-dismissible"><p>' .
+                             esc_html__('デフォルトサムネイル設定を保存しました。', 'andw-news') . '</p></div>';
+                    });
+                } else {
+                    add_action('admin_notices', function() {
+                        echo '<div class="notice notice-error is-dismissible"><p>' .
+                             esc_html__('無効な画像IDです。', 'andw-news') . '</p></div>';
+                    });
+                }
+            } else {
+                // 画像IDが0の場合は削除
+                delete_option('andw_news_default_thumbnail');
+                add_action('admin_notices', function() {
+                    echo '<div class="notice notice-success is-dismissible"><p>' .
+                         esc_html__('デフォルトサムネイル設定を削除しました。', 'andw-news') . '</p></div>';
+                });
+            }
+        }
     }
 
     /**
@@ -324,6 +398,19 @@ class ANDW_News_Admin {
                 'andw-link-type' => 'external',
                 'andw-subcontents' => '外部リンクのサンプルサブコンテンツ',
                 'categories' => '<span class="category">イベント</span>'
+            ],
+            [
+                'title' => 'サムネイルなしのサンプル',
+                'date' => '2024.01.05', // 後方互換性のため維持
+                'date_raw' => '2024-01-05', // 日付フォーマット用の生データ
+                'excerpt' => 'これはサムネイルがない投稿のサンプルです。デフォルトサムネイル機能のテストに使用されます。',
+                'thumbnail' => $this->get_default_thumbnail_for_preview(),
+                'event_date' => '<span class="andw-event-date">2024.01.15</span>',
+                'link_url' => '#',
+                'link_target' => '_self',
+                'andw-link-type' => 'none',
+                'andw-subcontents' => 'デフォルトサムネイルのテスト',
+                'categories' => '<span class="category">テスト</span>'
             ]
         ];
 
@@ -479,6 +566,23 @@ class ANDW_News_Admin {
             // フォールバック: CSS背景のプレースホルダー
             return '<div class="andw-news-thumbnail" style="width:100px;height:80px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">サンプル画像</div>';
         }
+    }
+
+    /**
+     * デフォルトサムネイル機能のテスト用画像HTMLを取得
+     *
+     * @return string デフォルトサムネイル画像HTML
+     */
+    private function get_default_thumbnail_for_preview() {
+        // デフォルトサムネイル設定を取得
+        $default_thumbnail_id = get_option('andw_news_default_thumbnail', 0);
+
+        if ($default_thumbnail_id && wp_attachment_is_image($default_thumbnail_id)) {
+            return wp_get_attachment_image($default_thumbnail_id, 'medium', false, ['class' => 'andw-news-thumbnail default']);
+        }
+
+        // デフォルトサムネイルが設定されていない場合は空文字を返す
+        return '';
     }
 
     /**
