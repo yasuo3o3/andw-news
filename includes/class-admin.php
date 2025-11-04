@@ -307,7 +307,10 @@ class ANDW_News_Admin {
                 'thumbnail' => $this->get_sample_thumbnail(),
                 'event_date' => '<span class="andw-event-date">2024.01.20</span>',
                 'link_url' => '#',
-                'link_target' => '_self'
+                'link_target' => '_self',
+                'andw-link-type' => 'self',
+                'andw-subcontents' => 'サンプルサブコンテンツです',
+                'categories' => '<span class="category">お知らせ</span>'
             ],
             [
                 'title' => 'サンプルニュースタイトル2',
@@ -317,7 +320,10 @@ class ANDW_News_Admin {
                 'thumbnail' => $this->get_sample_thumbnail(),
                 'event_date' => '<span class="andw-event-date">2024.01.25</span>',
                 'link_url' => '#',
-                'link_target' => '_self'
+                'link_target' => '_self',
+                'andw-link-type' => 'external',
+                'andw-subcontents' => '外部リンクのサンプルサブコンテンツ',
+                'categories' => '<span class="category">イベント</span>'
             ]
         ];
 
