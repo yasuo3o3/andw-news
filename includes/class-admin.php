@@ -463,6 +463,19 @@ class ANDW_News_Admin {
             $template_data['html'] = '';
         }
 
+        // wrapper_htmlとitem_htmlも必須フィールドとして処理
+        if (isset($raw_post_data['wrapper_html']) && is_string($raw_post_data['wrapper_html'])) {
+            $template_data['wrapper_html'] = wp_kses_post(wp_unslash($raw_post_data['wrapper_html']));
+        } else {
+            $template_data['wrapper_html'] = '';
+        }
+
+        if (isset($raw_post_data['item_html']) && is_string($raw_post_data['item_html'])) {
+            $template_data['item_html'] = wp_kses_post(wp_unslash($raw_post_data['item_html']));
+        } else {
+            $template_data['item_html'] = '';
+        }
+
         $is_edit = !empty(filter_input(INPUT_POST, 'is_edit'));
         $original_name = sanitize_text_field(filter_input(INPUT_POST, 'original_name', FILTER_SANITIZE_STRING) ?? '');
 
