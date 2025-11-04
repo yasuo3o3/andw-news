@@ -440,10 +440,12 @@ class ANDW_News_Admin {
         $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
         $template_data = map_deep(wp_unslash($_POST['template_data'] ?? []), 'sanitize_text_field');
 
-        // HTMLフィールドは生データとして復元（wp_ksesで後処理される）
+        // HTMLフィールドのサニタイゼーション（保存時に安全なHTMLのみ許可）
         $raw_post_data = wp_unslash($_POST['template_data'] ?? []);
-        if (isset($raw_post_data['html'])) {
-            $template_data['html'] = $raw_post_data['html'];
+        if (isset($raw_post_data['html']) && is_string($raw_post_data['html'])) {
+            $template_data['html'] = wp_kses_post($raw_post_data['html']);
+        } else {
+            $template_data['html'] = '';
         }
 
         // 入力検証とサニタイゼーション
