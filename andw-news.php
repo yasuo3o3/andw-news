@@ -204,7 +204,7 @@ function andw_news_admin_assets($hook) {
     wp_enqueue_script(
         'andw-news-admin',
         ANDW_NEWS_PLUGIN_URL . 'assets/js/admin.js',
-        ['jquery', 'wp-media'],
+        ['jquery'],
         ANDW_NEWS_VERSION,
         true
     );
