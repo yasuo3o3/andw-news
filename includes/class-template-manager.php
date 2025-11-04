@@ -306,11 +306,6 @@ class ANDW_News_Template_Manager {
      * @return string 置換後のHTML
      */
     public function replace_tokens($html, $data) {
-        // デバッグログ：入力データを記録
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[andw-news] replace_tokens called with data: ' . print_r($data, true));
-            error_log('[andw-news] Original HTML length: ' . strlen($html));
-        }
 
         // 条件分岐を先に処理
         $html = $this->process_conditionals($html, $data);
@@ -341,25 +336,9 @@ class ANDW_News_Template_Manager {
             }
         }
 
-        // デバッグログ：トークン情報を記録
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            $token_summary = [];
-            foreach ($tokens as $token => $value) {
-                $token_summary[$token] = is_string($value) ? substr($value, 0, 50) : gettype($value);
-            }
-            error_log('[andw-news] Tokens to replace: ' . print_r($token_summary, true));
-        }
 
         $result = str_replace(array_keys($tokens), array_values($tokens), $html);
 
-        // デバッグログ：結果を記録
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[andw-news] Final HTML length: ' . strlen($result));
-            // 残っている未処理のトークンをチェック
-            if (preg_match_all('/\{[^}]+\}/', $result, $matches)) {
-                error_log('[andw-news] Remaining unprocessed tokens: ' . implode(', ', array_unique($matches[0])));
-            }
-        }
 
         return $result;
     }
@@ -512,10 +491,6 @@ class ANDW_News_Template_Manager {
      * @return string 処理後のHTML
      */
     private function process_conditionals($html, $data) {
-        // デバッグログ
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[andw-news] Processing conditionals for data: ' . print_r(array_keys($data), true));
-        }
 
         // 処理の最大回数を制限（無限ループ防止）
         $max_iterations = 10;
@@ -533,9 +508,6 @@ class ANDW_News_Template_Manager {
                 $false_content = $matches[3];
 
                 $result = $this->evaluate_condition($condition, $data);
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("[andw-news] If-else condition '$condition' = " . ($result ? 'true' : 'false'));
-                }
 
                 return $result ? $true_content : $false_content;
             }, $html);
@@ -547,9 +519,6 @@ class ANDW_News_Template_Manager {
                 $content = $matches[2];
 
                 $result = !$this->evaluate_condition($condition, $data);
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("[andw-news] Ifnot condition '$condition' = " . ($result ? 'true' : 'false'));
-                }
 
                 return $result ? $content : '';
             }, $html);
@@ -561,18 +530,13 @@ class ANDW_News_Template_Manager {
                 $content = $matches[2];
 
                 $result = $this->evaluate_condition($condition, $data);
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("[andw-news] If condition '$condition' = " . ($result ? 'true' : 'false'));
-                }
 
                 return $result ? $content : '';
             }, $html);
 
         } while ($html !== $original_html && $iteration < $max_iterations);
 
-        if ($iteration >= $max_iterations) {
-            error_log('[andw-news] WARNING: Maximum iterations reached in process_conditionals');
-        }
+        // 最大反復回数に達した場合は警告なしで処理継続
 
         return $html;
     }
@@ -587,21 +551,11 @@ class ANDW_News_Template_Manager {
     private function evaluate_condition($condition, $data) {
         $condition = trim($condition);
 
-        // デバッグ用：利用可能なデータキーをログ出力
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[andw-news] Available data keys: ' . implode(', ', array_keys($data)));
-            error_log("[andw-news] Evaluating condition: '$condition'");
-        }
-
         // 等値比較: field_name="value" または field_name='value'
         if (preg_match('/^([^=]+)=["\'](.*?)["\']$/', $condition, $matches)) {
             $field = trim($matches[1]);
             $expected_value = $matches[2];
             $actual_value = $data[$field] ?? '';
-
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("[andw-news] Equality check: field='$field', expected='$expected_value', actual='$actual_value'");
-            }
 
             return $actual_value === $expected_value;
         }
@@ -611,10 +565,6 @@ class ANDW_News_Template_Manager {
             $field = trim($matches[1]);
             $expected_value = $matches[2];
             $actual_value = $data[$field] ?? '';
-
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("[andw-news] Inequality check: field='$field', expected!='$expected_value', actual='$actual_value'");
-            }
 
             return $actual_value !== $expected_value;
         }
@@ -633,10 +583,6 @@ class ANDW_News_Template_Manager {
             $is_not_empty = $value;
         } else {
             $is_not_empty = !empty($value);
-        }
-
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("[andw-news] Existence check: field='$field', value='" . print_r($value, true) . "', result=" . ($is_not_empty ? 'true' : 'false'));
         }
 
         return $is_not_empty;

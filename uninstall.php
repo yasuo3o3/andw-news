@@ -19,7 +19,8 @@ function andw_news_uninstall_cleanup() {
         'andw_news_templates',
         'andw_news_default_template',
         'andw_news_disable_css',
-        'andw_news_default_thumbnail'
+        'andw_news_default_thumbnail',
+        'andw_news_cache_keys'
     ];
 
     foreach ($options_to_delete as $option) {

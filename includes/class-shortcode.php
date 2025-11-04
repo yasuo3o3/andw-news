@@ -77,6 +77,7 @@ class ANDW_News_Shortcode {
 
         // 結果をキャッシュ（15分）
         set_transient($cache_key, $result, 15 * MINUTE_IN_SECONDS);
+        $this->add_cache_key($cache_key);
 
         return $result;
     }
@@ -185,5 +186,20 @@ class ANDW_News_Shortcode {
         $output .= '</div>';
 
         return $output;
+    }
+
+    /**
+     * キャッシュキーをリストに追加
+     *
+     * @param string $cache_key キャッシュキー
+     */
+    private function add_cache_key($cache_key) {
+        $cache_keys = get_option('andw_news_cache_keys', []);
+        if (!in_array($cache_key, $cache_keys, true)) {
+            $cache_keys[] = sanitize_key($cache_key);
+            // 重複削除と空値除去
+            $cache_keys = array_unique(array_filter($cache_keys));
+            update_option('andw_news_cache_keys', $cache_keys);
+        }
     }
 }

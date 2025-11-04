@@ -34,8 +34,7 @@ function andw_news_init() {
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-admin.php';
     require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-gutenberg-block.php';
 
-    // 翻訳ファイルを読み込み
-    load_plugin_textdomain('andw-news', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    // 翻訳ファイルの読み込みはWordPressが自動的に処理
 
     // デバッグ機能（WP_DEBUGが有効な場合のみ）
     if (defined('WP_DEBUG') && WP_DEBUG && file_exists(ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php')) {

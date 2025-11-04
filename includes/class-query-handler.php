@@ -337,10 +337,6 @@ class ANDW_News_Query_Handler {
     private function get_custom_fields($post_id) {
         $custom_fields = [];
 
-        // デバッグログ
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("[andw-news] Getting custom fields for post ID: $post_id");
-        }
 
         // 明示的にチェックするandwフィールドのリスト
         $expected_fields = [
@@ -367,9 +363,6 @@ class ANDW_News_Query_Handler {
                 $scf_value = SCF::get($field_key, $post_id);
                 if (!empty($scf_value)) {
                     $field_value = $scf_value;
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("[andw-news] SCF value found for $field_key: $scf_value");
-                    }
                 }
             }
 
@@ -379,10 +372,6 @@ class ANDW_News_Query_Handler {
                 $custom_fields[$field_key] = $field_value;
             } else {
                 $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
-            }
-
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("[andw-news] Field $field_key = '" . $custom_fields[$field_key] . "'");
             }
         }
 
@@ -396,16 +385,8 @@ class ANDW_News_Query_Handler {
 
                     $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
                     $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
-
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("[andw-news] Additional field $meta_key = '" . $custom_fields[$meta_key] . "'");
-                    }
                 }
             }
-        }
-
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("[andw-news] Total custom fields retrieved: " . count($custom_fields));
         }
 
         return $custom_fields;

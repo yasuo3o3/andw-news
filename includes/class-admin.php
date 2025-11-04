@@ -439,9 +439,20 @@ class ANDW_News_Admin {
 
         $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
         $template_data = wp_unslash($_POST['template_data'] ?? []);
+
+        // 入力検証とサニタイゼーション
+        if (!is_array($template_data)) {
+            wp_send_json_error(['message' => 'Invalid template data format']);
+        }
+
         // 個別にサニタイズ（HTMLは生のまま template_manager へ）
         $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
         $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
+
+        // HTMLフィールドの基本検証（wp_ksesでの処理はtemplate_managerで実行）
+        if (isset($template_data['html']) && !is_string($template_data['html'])) {
+            wp_send_json_error(['message' => 'Invalid HTML data type']);
+        }
         // template_data['html'] は wp_kses で安全に処理されるため、ここではサニタイズしない
         $is_edit = !empty($_POST['is_edit']);
         $original_name = sanitize_text_field(wp_unslash($_POST['original_name'] ?? ''));
@@ -855,18 +866,18 @@ class ANDW_News_Admin {
      * andW Newsのキャッシュをクリア
      */
     public function clear_news_cache() {
-        global $wpdb;
+        // 保存されたキャッシュキーリストを取得
+        $cache_keys = get_option('andw_news_cache_keys', []);
 
-        // andw_news関連の全transientを削除
-        $wpdb->query($wpdb->prepare("
-            DELETE FROM {$wpdb->options}
-            WHERE option_name LIKE %s
-            OR option_name LIKE %s
-        ", '_transient_andw_news_%', '_transient_timeout_andw_news_%'));
+        // 各キャッシュキーを個別に削除
+        foreach ($cache_keys as $cache_key) {
+            delete_transient($cache_key);
+            delete_site_transient($cache_key);
+        }
 
-        // ログ記録（デバッグ用）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('andW News: Cache cleared');
+        // キャッシュキーリストを初期化
+        if (!empty($cache_keys)) {
+            delete_option('andw_news_cache_keys');
         }
     }
 
