@@ -14,6 +14,7 @@
 // 直接アクセスを防ぐ
 if (!defined('ABSPATH')) {
     exit;
+}
 
 // プラグイン定数定義
 define('ANDW_NEWS_VERSION', '0.0.2');
