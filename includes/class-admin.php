@@ -437,33 +437,34 @@ class ANDW_News_Admin {
             wp_send_json_error(['message' => 'Insufficient permissions']);
         }
 
-        $template_name = sanitize_text_field(wp_unslash($_POST['template_name'] ?? ''));
-        $template_data = map_deep(wp_unslash($_POST['template_data'] ?? []), 'sanitize_text_field');
+        $template_name = sanitize_text_field(filter_input(INPUT_POST, 'template_name', FILTER_SANITIZE_STRING) ?? '');
 
-        // HTMLフィールドのサニタイゼーション（保存時に安全なHTMLのみ許可）
-        $raw_post_data = wp_unslash($_POST['template_data'] ?? []);
+        // 生POST取得（$_POSTに直接触れない）
+        $raw_post_data = filter_input(
+            INPUT_POST,
+            'template_data',
+            FILTER_DEFAULT,
+            FILTER_REQUIRE_ARRAY
+        );
+
+        if (!is_array($raw_post_data)) {
+            wp_send_json_error(['message' => 'Invalid template data format']);
+        }
+
+        // 基本フィールドをサニタイズ
+        $template_data = [];
+        $template_data['name'] = sanitize_text_field(wp_unslash($raw_post_data['name'] ?? ''));
+        $template_data['description'] = sanitize_textarea_field(wp_unslash($raw_post_data['description'] ?? ''));
+
+        // HTMLフィールドのみHTML許可制でサニタイズ
         if (isset($raw_post_data['html']) && is_string($raw_post_data['html'])) {
-            $template_data['html'] = wp_kses_post($raw_post_data['html']);
+            $template_data['html'] = wp_kses_post(wp_unslash($raw_post_data['html']));
         } else {
             $template_data['html'] = '';
         }
 
-        // 入力検証とサニタイゼーション
-        if (!is_array($template_data)) {
-            wp_send_json_error(['message' => 'Invalid template data format']);
-        }
-
-        // 個別にサニタイズ（HTMLは生のまま template_manager へ）
-        $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
-        $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
-
-        // HTMLフィールドの基本検証（wp_ksesでの処理はtemplate_managerで実行）
-        if (isset($template_data['html']) && !is_string($template_data['html'])) {
-            wp_send_json_error(['message' => 'Invalid HTML data type']);
-        }
-        // template_data['html'] は wp_kses で安全に処理されるため、ここではサニタイズしない
-        $is_edit = !empty($_POST['is_edit']);
-        $original_name = sanitize_text_field(wp_unslash($_POST['original_name'] ?? ''));
+        $is_edit = !empty(filter_input(INPUT_POST, 'is_edit'));
+        $original_name = sanitize_text_field(filter_input(INPUT_POST, 'original_name', FILTER_SANITIZE_STRING) ?? '');
 
         if (empty($template_name) || empty($template_data)) {
             wp_send_json_error(['message' => 'Required fields are missing']);
