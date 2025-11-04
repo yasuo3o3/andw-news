@@ -456,24 +456,14 @@ class ANDW_News_Admin {
         $template_data['name'] = sanitize_text_field(wp_unslash($raw_post_data['name'] ?? ''));
         $template_data['description'] = sanitize_textarea_field(wp_unslash($raw_post_data['description'] ?? ''));
 
-        // HTMLフィールドのみHTML許可制でサニタイズ
-        if (isset($raw_post_data['html']) && is_string($raw_post_data['html'])) {
-            $template_data['html'] = wp_kses_post(wp_unslash($raw_post_data['html']));
-        } else {
-            $template_data['html'] = '';
-        }
-
-        // wrapper_htmlとitem_htmlも必須フィールドとして処理
-        if (isset($raw_post_data['wrapper_html']) && is_string($raw_post_data['wrapper_html'])) {
-            $template_data['wrapper_html'] = wp_kses_post(wp_unslash($raw_post_data['wrapper_html']));
-        } else {
-            $template_data['wrapper_html'] = '';
-        }
-
-        if (isset($raw_post_data['item_html']) && is_string($raw_post_data['item_html'])) {
-            $template_data['item_html'] = wp_kses_post(wp_unslash($raw_post_data['item_html']));
-        } else {
-            $template_data['item_html'] = '';
+        // HTMLフィールドはtemplate-manager側でサニタイズされるため、ここではホワイトリスト化のみ
+        $html_fields = ['html', 'wrapper_html', 'item_html'];
+        foreach ($html_fields as $field) {
+            if (isset($raw_post_data[$field]) && is_string($raw_post_data[$field])) {
+                $template_data[$field] = wp_unslash($raw_post_data[$field]);
+            } else {
+                $template_data[$field] = '';
+            }
         }
 
         $is_edit = !empty(filter_input(INPUT_POST, 'is_edit'));
