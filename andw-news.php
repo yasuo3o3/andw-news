@@ -121,6 +121,10 @@ function andw_news_register_assets() {
                 );
             }
         }
+
+        // カスタムCSS処理
+        andw_news_enqueue_custom_css($default_template);
+    }
     }
 
     // タブ用JavaScript（tabs使用時のみ）
@@ -214,3 +218,45 @@ function andw_news_admin_assets($hook) {
     ]);
 }
 add_action('admin_enqueue_scripts', 'andw_news_admin_assets');
+
+/**
+ * テンプレート専用カスタムCSSを処理
+ *
+ * @param string $template_name テンプレート名
+ */
+function andw_news_enqueue_custom_css($template_name) {
+    // CSS無効化設定を確認
+    $disable_css = get_option('andw_news_disable_css', false);
+    if ($disable_css) {
+        return;
+    }
+
+    // テンプレートマネージャーからカスタムCSSを取得
+    $template_manager = new ANDW_News_Template_Manager();
+    $templates = $template_manager->get_templates();
+
+    if (isset($templates[$template_name]['css']) && !empty($templates[$template_name]['css'])) {
+        $custom_css = $templates[$template_name]['css'];
+        $handle = 'andw-news-' . $template_name;
+
+        // 既存のCSSハンドルが存在する場合はそれに追加、なければ新規作成
+        if (wp_style_is($handle, 'enqueued')) {
+            wp_add_inline_style($handle, $custom_css);
+        } else {
+            // フォールバック: 独立したスタイルとして追加
+            wp_enqueue_style(
+                $handle . '-custom',
+                false, // URLなし（inline専用）
+                [],
+                '1.0'
+            );
+            wp_add_inline_style($handle . '-custom', $custom_css);
+        }
+    }
+
+    // 拡張フック: 他のプラグイン/テーマからのCSS追加を可能にする
+    do_action('andw_news_enqueue_template_css', $template_name, [
+        'disable_css' => $disable_css,
+        'templates' => $templates
+    ]);
+}

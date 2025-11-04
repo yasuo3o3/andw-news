@@ -198,6 +198,11 @@ class ANDW_News_Template_Manager {
         $template_data['name'] = sanitize_text_field($template_data['name'] ?? '');
         $template_data['description'] = sanitize_textarea_field($template_data['description'] ?? '');
 
+        // カスタムCSSをサニタイズ
+        if (isset($template_data['css'])) {
+            $template_data['css'] = $this->sanitize_css($template_data['css']);
+        }
+
         $templates[$template_name] = $template_data;
 
         // update_option は値が同じ場合 false を返すが、それも成功扱いとする
@@ -651,5 +656,26 @@ class ANDW_News_Template_Manager {
         }
 
         return $template;
+    }
+
+    /**
+     * CSSを安全にサニタイズ
+     *
+     * @param string $css CSS文字列
+     * @return string サニタイズ済みCSS
+     */
+    private function sanitize_css($css) {
+        if (empty($css)) {
+            return '';
+        }
+
+        // @import文を除去（セキュリティリスク対策）
+        $css = preg_replace('/@import[^;]+;/i', '', $css);
+
+        // javascript:URLを除去
+        $css = preg_replace('/javascript:/i', '', $css);
+
+        // 基本的なサニタイゼーション
+        return wp_kses_no_html(sanitize_textarea_field($css));
     }
 }

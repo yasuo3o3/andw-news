@@ -466,6 +466,13 @@ class ANDW_News_Admin {
             }
         }
 
+        // CSSフィールド（template-manager側でサニタイズされる）
+        if (isset($raw_post_data['css']) && is_string($raw_post_data['css'])) {
+            $template_data['css'] = wp_unslash($raw_post_data['css']);
+        } else {
+            $template_data['css'] = '';
+        }
+
         $is_edit = !empty(filter_input(INPUT_POST, 'is_edit'));
         $original_name = sanitize_text_field(filter_input(INPUT_POST, 'original_name', FILTER_SANITIZE_STRING) ?? '');
 

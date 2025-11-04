@@ -35,7 +35,8 @@
             showTemplateEditor('', {
                 name: '',
                 html: '',
-                description: ''
+                description: '',
+                css: ''
             });
         });
 
@@ -168,6 +169,16 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th><label for="template-css">カスタムCSS</label></th>
+                                <td>
+                                    <textarea id="template-css" class="large-text code" rows="6">${templateData.css || ''}</textarea>
+                                    <p class="description">
+                                        <strong>対象クラス:</strong> .andw-news--${templateName || 'template'}<br>
+                                        このテンプレート専用のCSSを記述できます。@importやjavascript:は自動的に除去されます。
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th colspan="2">
                                     <p class="description">
                                         <strong>基本トークン:</strong> {title}, {date}, {excerpt}, {thumbnail}, {event_date}, {link_url}, {link_target}<br>
@@ -235,7 +246,8 @@
             name: $('#template-name').val(),
             description: $('#template-description').val(),
             wrapper_html: $('#template-wrapper-html').val(),
-            item_html: $('#template-item-html').val()
+            item_html: $('#template-item-html').val(),
+            css: $('#template-css').val()
         };
 
         const data = {
