@@ -125,7 +125,6 @@ function andw_news_register_assets() {
         // カスタムCSS処理
         andw_news_enqueue_custom_css($default_template);
     }
-    }
 
     // タブ用JavaScript（tabs使用時のみ）
     $should_load_tabs = false;
