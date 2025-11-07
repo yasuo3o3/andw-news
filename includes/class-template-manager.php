@@ -695,8 +695,20 @@ class ANDW_News_Template_Manager {
         // javascript:URLを除去
         $css = preg_replace('/javascript:/i', '', $css);
 
-        // 基本的なサニタイゼーション
-        return wp_kses_no_html(sanitize_textarea_field($css));
+        // vbscript:URLを除去
+        $css = preg_replace('/vbscript:/i', '', $css);
+
+        // data:URLのうちdangerous typesを除去
+        $css = preg_replace('/data:(?!image\/|text\/css)[^;,]+[;,]/i', '', $css);
+
+        // expression()を除去（IE用CSS expression attack対策）
+        $css = preg_replace('/expression\s*\(/i', '', $css);
+
+        // 改行文字を正規化
+        $css = preg_replace('/\r\n|\r|\n/', "\n", $css);
+
+        // 基本的なサニタイゼーション（HTMLタグ除去は行わない）
+        return trim($css);
     }
 
     /**
