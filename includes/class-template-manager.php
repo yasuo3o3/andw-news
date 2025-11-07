@@ -198,6 +198,11 @@ class ANDW_News_Template_Manager {
             'sup' => ['class' => true],
             'br' => [],
             'hr' => ['class' => true],
+            // フィルタータブとインタラクティブ要素
+            'button' => ['class' => true, 'id' => true, 'type' => true, 'data-*' => true, 'onclick' => true],
+            // スタイルとスクリプト（ラッパーHTML用）
+            'style' => ['type' => true, 'media' => true],
+            'script' => ['type' => true, 'src' => true, 'defer' => true, 'async' => true],
             '#comment' => [], // HTMLコメントを許可
         ];
 
@@ -206,7 +211,7 @@ class ANDW_News_Template_Manager {
             $template_data['html'] = wp_kses($template_data['html'], $allowed_tags);
         }
         if (isset($template_data['wrapper_html'])) {
-            $template_data['wrapper_html'] = wp_kses($template_data['wrapper_html'], $allowed_tags);
+            $template_data['wrapper_html'] = $this->sanitize_wrapper_html($template_data['wrapper_html']);
         }
         if (isset($template_data['item_html'])) {
             $template_data['item_html'] = wp_kses($template_data['item_html'], $allowed_tags);
@@ -709,6 +714,74 @@ class ANDW_News_Template_Manager {
 
         // 基本的なサニタイゼーション（HTMLタグ除去は行わない）
         return trim($css);
+    }
+
+    /**
+     * ラッパーHTMLを安全にサニタイズ（<style>と<script>内容を保持）
+     *
+     * @param string $html ラッパーHTML文字列
+     * @return string サニタイズ済みHTML
+     */
+    private function sanitize_wrapper_html($html) {
+        if (empty($html)) {
+            return '';
+        }
+
+        // 基本的なHTMLタグ用の許可リスト
+        $allowed_tags = [
+            'div' => ['class' => true, 'id' => true, 'data-*' => true],
+            'ul' => ['class' => true, 'id' => true],
+            'li' => ['class' => true, 'id' => true, 'data-*' => true],
+            'button' => ['class' => true, 'id' => true, 'type' => true, 'data-*' => true],
+            'span' => ['class' => true, 'id' => true, 'data-*' => true],
+        ];
+
+        // <style>タグ内容を一時保存
+        $style_contents = [];
+        $html = preg_replace_callback('/<style[^>]*>(.*?)<\/style>/s', function($matches) use (&$style_contents) {
+            $index = count($style_contents);
+            $style_contents[$index] = $this->sanitize_css($matches[1]);
+            return "<!--STYLE_PLACEHOLDER_$index-->";
+        }, $html);
+
+        // <script>タグ内容を一時保存（基本的なJavaScript検証）
+        $script_contents = [];
+        $html = preg_replace_callback('/<script[^>]*>(.*?)<\/script>/s', function($matches) use (&$script_contents) {
+            $script = $matches[1];
+
+            // 危険なJavaScript関数を除去
+            $script = preg_replace('/eval\s*\(/i', '', $script);
+            $script = preg_replace('/innerHTML\s*=/i', '', $script);
+            $script = preg_replace('/outerHTML\s*=/i', '', $script);
+            $script = preg_replace('/document\.write/i', '', $script);
+
+            $index = count($script_contents);
+            $script_contents[$index] = trim($script);
+            return "<!--SCRIPT_PLACEHOLDER_$index-->";
+        }, $html);
+
+        // HTMLタグをサニタイズ
+        $html = wp_kses($html, $allowed_tags);
+
+        // <style>タグを復元
+        $html = preg_replace_callback('/<!--STYLE_PLACEHOLDER_(\d+)-->/', function($matches) use ($style_contents) {
+            $index = intval($matches[1]);
+            if (isset($style_contents[$index])) {
+                return '<style>' . $style_contents[$index] . '</style>';
+            }
+            return '';
+        }, $html);
+
+        // <script>タグを復元
+        $html = preg_replace_callback('/<!--SCRIPT_PLACEHOLDER_(\d+)-->/', function($matches) use ($script_contents) {
+            $index = intval($matches[1]);
+            if (isset($script_contents[$index])) {
+                return '<script>' . $script_contents[$index] . '</script>';
+            }
+            return '';
+        }, $html);
+
+        return trim($html);
     }
 
     /**
