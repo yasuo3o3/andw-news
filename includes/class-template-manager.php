@@ -368,6 +368,14 @@ class ANDW_News_Template_Manager {
                     $tokens['{' . $key . '}'] = $value;
                 }
             }
+
+            // フィールド名の正規化：andw-subcontentsとandw_subcontentsの相互参照を追加
+            if (isset($data['andw-subcontents']) && !isset($tokens['{andw_subcontents}'])) {
+                $tokens['{andw_subcontents}'] = $data['andw-subcontents'];
+            }
+            if (isset($data['andw_subcontents']) && !isset($tokens['{andw-subcontents}'])) {
+                $tokens['{andw-subcontents}'] = $data['andw_subcontents'];
+            }
         }
 
 

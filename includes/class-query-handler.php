@@ -357,19 +357,29 @@ class ANDW_News_Query_Handler {
 
         // 明示的フィールドを最初に処理
         foreach ($expected_fields as $field_key) {
-            $field_value = get_post_meta($post_id, $field_key, true);
+            $field_value = '';
 
-            // SCFプラグインが有効な場合は SCF::get() も試す
-            if (empty($field_value) && class_exists('SCF') && method_exists('SCF', 'get')) {
+            // subcontentsフィールドの場合はSCFを優先（自動改行適用のため）
+            if (strpos($field_key, 'subcontents') !== false && class_exists('SCF') && method_exists('SCF', 'get')) {
                 $scf_value = SCF::get($field_key, $post_id);
                 if (!empty($scf_value)) {
-                    $field_value = $scf_value;
+                    $field_value = $scf_value; // SCFの自動改行機能が適用された値
+                }
+            }
+
+            // 値が空の場合はget_post_metaをフォールバック
+            if (empty($field_value)) {
+                $field_value = get_post_meta($post_id, $field_key, true);
+
+                // SCFが無効、またはSCF::get()で値が取れない場合の手動改行変換
+                if (!empty($field_value) && strpos($field_key, 'subcontents') !== false) {
+                    $field_value = nl2br($field_value);
                 }
             }
 
             // HTMLエスケープ処理（フィールドタイプに応じて適切な処理を適用）
             $no_escape_fields = ['andw-external-link', 'andw-internal-link'];
-            $limited_html_fields = ['andw-subcontents']; // BRタグのみ許可するフィールド
+            $limited_html_fields = ['andw-subcontents', 'andw_subcontents']; // BRタグのみ許可するフィールド
 
             if (in_array($field_key, $no_escape_fields)) {
                 // URL系フィールドはエスケープしない
@@ -393,8 +403,21 @@ class ANDW_News_Query_Handler {
 
                     $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
 
-                    // subcontentsフィールドの場合はbrタグを許可
+                    // subcontentsフィールドの場合の改行処理
                     if (strpos($meta_key, 'subcontents') !== false) {
+                        // SCFで値を取得し直す（自動改行適用のため）
+                        if (class_exists('SCF') && method_exists('SCF', 'get')) {
+                            $scf_value = SCF::get($meta_key, $post_id);
+                            if (!empty($scf_value)) {
+                                $field_value = $scf_value;
+                            }
+                        }
+
+                        // SCFで値が取れない場合は手動改行変換
+                        if (!empty($field_value) && $field_value === ($meta_values[0] ?? '')) {
+                            $field_value = nl2br($field_value);
+                        }
+
                         $custom_fields[$meta_key] = !empty($field_value) ? wp_kses($field_value, ['br' => []]) : '';
                     } else {
                         $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
