@@ -12,6 +12,20 @@ if (!defined('ABSPATH')) {
 class ANDW_News_Shortcode {
 
     /**
+     * 使用されたテンプレートのCSS出力待ちリスト
+     *
+     * @var array
+     */
+    private static $pending_css_templates = [];
+
+    /**
+     * CSS出力フックが設定済みかどうか
+     *
+     * @var bool
+     */
+    private static $footer_hook_added = false;
+
+    /**
      * コンストラクタ
      */
     public function __construct() {
@@ -45,6 +59,9 @@ class ANDW_News_Shortcode {
             $template_manager = new ANDW_News_Template_Manager();
             $layout = $template_manager->get_default_template();
         }
+
+        // 使用するテンプレートをCSS出力待ちリストに追加（キャッシュヒット時でも実行される）
+        $this->schedule_template_css_output($layout);
 
         // キャッシュキーを生成
         $cache_key = 'andw_news_' . md5(serialize($atts));
@@ -101,9 +118,6 @@ class ANDW_News_Shortcode {
             return '<div class="andw-news-error">' . esc_html__('テンプレートが見つかりません。', 'andw-news') . '</div>';
         }
 
-        // 使用するテンプレートのCSS（ベース＋カスタム）を確実に読み込み
-        $this->enqueue_template_assets($layout);
-
         // 新しいテンプレートシステムを使用してレンダリング
         $rendered_content = $template_manager->render_multiple_posts($posts, $template);
 
@@ -140,8 +154,8 @@ class ANDW_News_Shortcode {
             return '<div class="andw-news-error">' . esc_html__('タブテンプレートが見つかりません。', 'andw-news') . '</div>';
         }
 
-        // タブテンプレートのCSS（ベース＋カスタム）を確実に読み込み
-        $this->enqueue_template_assets('tabs');
+        // タブテンプレートをCSS出力待ちリストに追加
+        $this->schedule_template_css_output('tabs');
 
         // タブテンプレートのスラグを取得
         $tabs_slug = $template_manager->get_template_slug('tabs');
@@ -216,50 +230,102 @@ class ANDW_News_Shortcode {
     }
 
     /**
-     * テンプレート用のアセット（CSS）を確実に読み込み
+     * テンプレートのCSS出力をスケジュール
      *
      * @param string $template_name テンプレート名
      */
-    private function enqueue_template_assets($template_name) {
+    private function schedule_template_css_output($template_name) {
         // CSS無効化設定を確認
         $disable_css = get_option('andw_news_disable_css', false);
         if ($disable_css) {
             return;
         }
 
-        $handle = 'andw-news-' . $template_name;
+        // 重複を避けて待ちリストに追加
+        if (!in_array($template_name, self::$pending_css_templates, true)) {
+            self::$pending_css_templates[] = $template_name;
+        }
 
-        // ベースCSS（プラグイン or テーマ）を読み込み
-        if (!wp_style_is($handle, 'enqueued')) {
-            // テーマのCSSを優先してチェック
-            $theme_css_path = get_stylesheet_directory() . '/andw-news-changer/' . $template_name . '.css';
-            $theme_css_url = get_stylesheet_directory_uri() . '/andw-news-changer/' . $template_name . '.css';
+        // wp_footerフックを一度だけ設定
+        if (!self::$footer_hook_added) {
+            add_action('wp_footer', [$this, 'output_template_css'], 20);
+            self::$footer_hook_added = true;
+        }
+    }
 
-            if (file_exists($theme_css_path)) {
-                // テーマのCSSを使用
-                wp_enqueue_style(
-                    $handle,
-                    $theme_css_url,
-                    [],
-                    filemtime($theme_css_path)
-                );
-            } else {
-                // プラグインのCSSを使用
-                $plugin_css_path = ANDW_NEWS_PLUGIN_DIR . 'assets/css/' . $template_name . '.css';
-                if (file_exists($plugin_css_path)) {
-                    wp_enqueue_style(
-                        $handle,
-                        ANDW_NEWS_PLUGIN_URL . 'assets/css/' . $template_name . '.css',
-                        [],
-                        filemtime($plugin_css_path)
-                    );
-                }
+    /**
+     * wp_footerでテンプレート用CSSを出力
+     */
+    public function output_template_css() {
+        if (empty(self::$pending_css_templates)) {
+            return;
+        }
+
+        echo "\n<!-- andW News Template CSS -->\n<style id=\"andw-news-template-css\">\n";
+
+        foreach (self::$pending_css_templates as $template_name) {
+            $this->output_single_template_css($template_name);
+        }
+
+        echo "</style>\n<!-- /andW News Template CSS -->\n";
+
+        // 出力済みリストをクリア
+        self::$pending_css_templates = [];
+    }
+
+    /**
+     * 単一テンプレートのCSS（ベース＋カスタム）を出力
+     *
+     * @param string $template_name テンプレート名
+     */
+    private function output_single_template_css($template_name) {
+        // ベースCSSを出力
+        $this->output_base_template_css($template_name);
+
+        // カスタムCSSを出力
+        $this->output_custom_template_css($template_name);
+    }
+
+    /**
+     * ベーステンプレートCSSを出力
+     *
+     * @param string $template_name テンプレート名
+     */
+    private function output_base_template_css($template_name) {
+        $css_content = '';
+
+        // テーマのCSSを優先してチェック
+        $theme_css_path = get_stylesheet_directory() . '/andw-news-changer/' . $template_name . '.css';
+        if (file_exists($theme_css_path)) {
+            $css_content = file_get_contents($theme_css_path);
+        } else {
+            // プラグインのCSSを使用
+            $plugin_css_path = ANDW_NEWS_PLUGIN_DIR . 'assets/css/' . $template_name . '.css';
+            if (file_exists($plugin_css_path)) {
+                $css_content = file_get_contents($plugin_css_path);
             }
         }
 
-        // カスタムCSSを読み込み
-        if (function_exists('andw_news_enqueue_custom_css')) {
-            andw_news_enqueue_custom_css($template_name);
+        if (!empty($css_content)) {
+            echo "/* Base CSS for template: {$template_name} */\n";
+            echo wp_strip_all_tags($css_content);
+            echo "\n\n";
+        }
+    }
+
+    /**
+     * カスタムテンプレートCSSを出力
+     *
+     * @param string $template_name テンプレート名
+     */
+    private function output_custom_template_css($template_name) {
+        $template_manager = new ANDW_News_Template_Manager();
+        $templates = $template_manager->get_templates();
+
+        if (isset($templates[$template_name]['css']) && !empty($templates[$template_name]['css'])) {
+            echo "/* Custom CSS for template: {$template_name} */\n";
+            echo wp_strip_all_tags($templates[$template_name]['css']);
+            echo "\n\n";
         }
     }
 }

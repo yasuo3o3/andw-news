@@ -366,11 +366,18 @@ class ANDW_News_Query_Handler {
                 }
             }
 
-            // HTMLエスケープ処理（ただし、URLや一部フィールドは除外）
+            // HTMLエスケープ処理（フィールドタイプに応じて適切な処理を適用）
             $no_escape_fields = ['andw-external-link', 'andw-internal-link'];
+            $limited_html_fields = ['andw-subcontents']; // BRタグのみ許可するフィールド
+
             if (in_array($field_key, $no_escape_fields)) {
+                // URL系フィールドはエスケープしない
                 $custom_fields[$field_key] = $field_value;
+            } elseif (in_array($field_key, $limited_html_fields)) {
+                // SCFの自動BR変換に対応：brタグのみ許可
+                $custom_fields[$field_key] = !empty($field_value) ? wp_kses($field_value, ['br' => []]) : '';
             } else {
+                // その他のフィールドは完全エスケープ
                 $custom_fields[$field_key] = !empty($field_value) ? esc_html($field_value) : '';
             }
         }
@@ -384,7 +391,13 @@ class ANDW_News_Query_Handler {
                     && !isset($custom_fields[$meta_key])) {
 
                     $field_value = isset($meta_values[0]) ? $meta_values[0] : '';
-                    $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
+
+                    // subcontentsフィールドの場合はbrタグを許可
+                    if (strpos($meta_key, 'subcontents') !== false) {
+                        $custom_fields[$meta_key] = !empty($field_value) ? wp_kses($field_value, ['br' => []]) : '';
+                    } else {
+                        $custom_fields[$meta_key] = !empty($field_value) ? esc_html($field_value) : '';
+                    }
                 }
             }
         }
