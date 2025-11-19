@@ -101,6 +101,9 @@ class ANDW_News_Shortcode {
             return '<div class="andw-news-error">' . esc_html__('テンプレートが見つかりません。', 'andw-news') . '</div>';
         }
 
+        // 使用するテンプレートのCSS（ベース＋カスタム）を確実に読み込み
+        $this->enqueue_template_assets($layout);
+
         // 新しいテンプレートシステムを使用してレンダリング
         $rendered_content = $template_manager->render_multiple_posts($posts, $template);
 
@@ -136,6 +139,9 @@ class ANDW_News_Shortcode {
         if (!$tab_template) {
             return '<div class="andw-news-error">' . esc_html__('タブテンプレートが見つかりません。', 'andw-news') . '</div>';
         }
+
+        // タブテンプレートのCSS（ベース＋カスタム）を確実に読み込み
+        $this->enqueue_template_assets('tabs');
 
         // タブテンプレートのスラグを取得
         $tabs_slug = $template_manager->get_template_slug('tabs');
@@ -206,6 +212,54 @@ class ANDW_News_Shortcode {
             // 重複削除と空値除去
             $cache_keys = array_unique(array_filter($cache_keys));
             update_option('andw_news_cache_keys', $cache_keys);
+        }
+    }
+
+    /**
+     * テンプレート用のアセット（CSS）を確実に読み込み
+     *
+     * @param string $template_name テンプレート名
+     */
+    private function enqueue_template_assets($template_name) {
+        // CSS無効化設定を確認
+        $disable_css = get_option('andw_news_disable_css', false);
+        if ($disable_css) {
+            return;
+        }
+
+        $handle = 'andw-news-' . $template_name;
+
+        // ベースCSS（プラグイン or テーマ）を読み込み
+        if (!wp_style_is($handle, 'enqueued')) {
+            // テーマのCSSを優先してチェック
+            $theme_css_path = get_stylesheet_directory() . '/andw-news-changer/' . $template_name . '.css';
+            $theme_css_url = get_stylesheet_directory_uri() . '/andw-news-changer/' . $template_name . '.css';
+
+            if (file_exists($theme_css_path)) {
+                // テーマのCSSを使用
+                wp_enqueue_style(
+                    $handle,
+                    $theme_css_url,
+                    [],
+                    filemtime($theme_css_path)
+                );
+            } else {
+                // プラグインのCSSを使用
+                $plugin_css_path = ANDW_NEWS_PLUGIN_DIR . 'assets/css/' . $template_name . '.css';
+                if (file_exists($plugin_css_path)) {
+                    wp_enqueue_style(
+                        $handle,
+                        ANDW_NEWS_PLUGIN_URL . 'assets/css/' . $template_name . '.css',
+                        [],
+                        filemtime($plugin_css_path)
+                    );
+                }
+            }
+        }
+
+        // カスタムCSSを読み込み
+        if (function_exists('andw_news_enqueue_custom_css')) {
+            andw_news_enqueue_custom_css($template_name);
         }
     }
 }
