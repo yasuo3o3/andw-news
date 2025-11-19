@@ -351,7 +351,8 @@ class ANDW_News_Query_Handler {
             'andw-event-start-date',
             'andw-event-end-date',
             'andw-event-free-text',
-            'andw-subcontents'
+            'andw-subcontents',
+            'andw_subcontents'
         ];
 
         // 明示的フィールドを最初に処理
