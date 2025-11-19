@@ -84,6 +84,13 @@
     flex-shrink: 0;
 }
 
+.andw-news-ul-subcontents {
+    margin-top: 8px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
 /* 空状態・エラー状態 */
 .andw-news-empty,
 .andw-news-error {

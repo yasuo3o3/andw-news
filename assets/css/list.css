@@ -56,6 +56,13 @@
     margin: 0;
 }
 
+.andw-news-subcontents {
+    margin-top: 8px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 .andw-event-date,
 .andw-event-period,
 .andw-event-text {

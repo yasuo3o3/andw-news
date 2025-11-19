@@ -71,6 +71,7 @@ class ANDW_News_Template_Manager {
                             </div>
                             <h3 class="andw-news-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                             <div class="andw-news-excerpt">{excerpt}</div>
+                            {if andw-subcontents}<div class="andw-news-subcontents">{andw-subcontents}</div>{/if}
                         </div>
                     </article>',
                 'description' => 'シンプルなリスト表示'
@@ -88,6 +89,7 @@ class ANDW_News_Template_Manager {
                             </div>
                             <h3 class="andw-news-card-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                             <div class="andw-news-card-excerpt">{excerpt}</div>
+                            {if andw-subcontents}<div class="andw-news-card-subcontents">{andw-subcontents}</div>{/if}
                             {event_date}
                         </div>
                     </div>',
@@ -105,6 +107,7 @@ class ANDW_News_Template_Manager {
                         </div>
                         <h3 class="andw-news-tab-title"><a href="{link_url}" target="{link_target}">{title}</a></h3>
                         <div class="andw-news-tab-excerpt">{excerpt}</div>
+                        {if andw-subcontents}<div class="andw-news-tab-subcontents">{andw-subcontents}</div>{/if}
                     </article>',
                 'description' => 'タブ切り替え表示'
             ],
@@ -115,6 +118,7 @@ class ANDW_News_Template_Manager {
                 'item_html' => '<li>
                         <time datetime="{date}">{date}</time>
                         <a href="{link_url}" target="{link_target}">{event_date} {title}</a>
+                        {if andw-subcontents}<div class="andw-news-ul-subcontents">{andw-subcontents}</div>{/if}
                     </li>',
                 'description' => 'HTMLリスト形式での表示'
             ]
