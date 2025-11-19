@@ -237,19 +237,26 @@ function andw_news_enqueue_custom_css($template_name) {
     if (isset($templates[$template_name]['css']) && !empty($templates[$template_name]['css'])) {
         $custom_css = $templates[$template_name]['css'];
         $handle = 'andw-news-' . $template_name;
+        $custom_handle = $handle . '-custom';
 
-        // 既存のCSSハンドルが存在する場合はそれに追加、なければ新規作成
+        // 既存のデフォルトCSSハンドルが存在する場合はそれに追加
         if (wp_style_is($handle, 'enqueued')) {
             wp_add_inline_style($handle, $custom_css);
         } else {
-            // フォールバック: 独立したスタイルとして追加
-            wp_enqueue_style(
-                $handle . '-custom',
-                false, // URLなし（inline専用）
-                [],
-                '1.0'
-            );
-            wp_add_inline_style($handle . '-custom', $custom_css);
+            // デフォルトCSSが存在しない場合は、カスタムCSS専用ハンドルを作成
+            // 既にカスタムハンドルが登録されているかチェック
+            if (!wp_style_is($custom_handle, 'registered')) {
+                wp_register_style(
+                    $custom_handle,
+                    false, // URLなし（inline専用）
+                    [],
+                    ANDW_NEWS_VERSION
+                );
+            }
+
+            // カスタムハンドルをエンキューしてインラインCSSを追加
+            wp_enqueue_style($custom_handle);
+            wp_add_inline_style($custom_handle, $custom_css);
         }
     }
 

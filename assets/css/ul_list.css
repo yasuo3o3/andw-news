@@ -1,0 +1,125 @@
+/* andW News - ULリストレイアウト */
+
+.andw-news-wrapper.andw-news-layout-ul-list {
+    margin: 0;
+    padding: 0;
+}
+
+.news {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.news li {
+    border-bottom: 1px solid #e1e1e1;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0;
+}
+
+.news li:last-child {
+    border-bottom: none;
+}
+
+.news li:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.news time {
+    color: #666;
+    font-size: 14px;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-weight: normal;
+}
+
+.news a {
+    color: #333;
+    text-decoration: none;
+    flex: 1;
+    line-height: 1.4;
+    font-size: 15px;
+}
+
+.news a:hover {
+    color: #0073aa;
+    text-decoration: underline;
+}
+
+/* イベント日付スタイル */
+.news .andw-event-date,
+.news .andw-event-period,
+.news .andw-event-text {
+    background: #f0f0f0;
+    color: #333;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline;
+    margin-right: 8px;
+}
+
+/* ピン留め投稿のスタイル */
+.news .andw-news-item--pinned,
+.news .pinned {
+    background-color: #fff7e6;
+    border-left: 4px solid #f57c00;
+}
+
+.andw-news-pinned-badge {
+    background: #f57c00;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* 空状態・エラー状態 */
+.andw-news-empty,
+.andw-news-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    background: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+}
+
+.andw-news-error {
+    background: #ffeaea;
+    border-color: #ff6b6b;
+    color: #c92a2a;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .news li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .news time {
+        min-width: auto;
+        font-size: 13px;
+    }
+
+    .news a {
+        font-size: 14px;
+    }
+
+    .andw-news-pinned-badge {
+        align-self: flex-end;
+        margin-top: -20px;
+    }
+}
