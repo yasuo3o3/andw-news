@@ -543,7 +543,8 @@ class ANDW_News_Template_Manager {
             $iteration++;
 
             // 1. {if field_name}content{else}content{/if} 形式を最初に処理（優先度最高）
-            $pattern_else = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!\/if\}|else\}))*+)\{else\}((?:[^{]++|\{(?!\/if\}))*+)\{\/if\}/s';
+            // ネスト対応を改善: より正確なバランスマッチング
+            $pattern_else = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!if\s|else\}|\/if\})[^}]*+\})*+)\{else\}((?:[^{]++|\{(?!if\s|\/if\})[^}]*+\})*+)\{\/if\}/s';
             $html = preg_replace_callback($pattern_else, function($matches) use ($data) {
                 $condition = trim($matches[1]);
                 $true_content = $matches[2];
@@ -566,7 +567,8 @@ class ANDW_News_Template_Manager {
             }, $html);
 
             // 3. {if field_name}content{/if} 形式を最後に処理
-            $pattern = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!\/if\}|else\}))*+)\{\/if\}/s';
+            // ネスト対応を改善: より正確なバランスマッチング
+            $pattern = '/\{if\s+([^}]+)\}((?:[^{]++|\{(?!if\s|\/if\}|else\})[^}]*+\})*+)\{\/if\}/s';
             $html = preg_replace_callback($pattern, function($matches) use ($data) {
                 $condition = trim($matches[1]);
                 $content = $matches[2];
