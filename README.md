@@ -1,283 +1,148 @@
-# andW News
+# andW News v2
 
-**Contributors:** yasuo3o3
-**Tags:** news, custom-post-type, template, layout, shortcode
-**Requires at least:** WordPress 6.5
-**Tested up to:** WordPress 6.8
-**Requires PHP:** 7.4
-**Stable tag:** 0.1.0
-**License:** GPLv2 or later
-**License URI:** https://www.gnu.org/licenses/gpl-2.0.html
+投稿のリンク先を変更し、新着一覧ブロックを提供する WordPress プラグイン。
 
-カスタム投稿タイプ「andw-news」の記事を様々なテンプレートで表示するWordPressプラグイン
+## できること
 
-## Description
+1. **投稿のリンク先を変更** — 投稿編集画面で外部URLを指定すると、サイト上のすべてのリンク（一覧、検索結果、ウィジェット等）がそのURLに差し替わる
+2. **新着一覧ブロック** — リスト表示 + カテゴリー別タブ切り替えに対応したGutenbergブロック
 
-andW Newsは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグインです。
+## インストール
 
-### 主な機能
+`andw-news/` フォルダを `/wp-content/plugins/` に配置し、管理画面で有効化。
 
-- 複数のレイアウトテンプレート（リスト、カード、タブ）
-- テンプレートの管理（作成、編集、複製、削除）
-- ショートコード対応
-- Gutenbergブロック対応
-- Smart Custom Fields（SCF）連携
-- テーマCSS上書き機能
-- ピン留め・優先表示機能
-- カテゴリーバッジ表示機能
+## 使い方
 
-### 使用方法
+### リンク先の変更
 
-#### ショートコード
+投稿の編集画面 → サイドバーの **「andW News — リンク設定」** メタボックスで設定。
 
-```php
-[andw_news layout="cards" per_page="10"]
-```
+| 項目 | 説明 |
+|---|---|
+| リンク先URL | 空欄なら通常のパーマリンク。URLを入れるとサイト上のリンクが差し替わる |
+| 新しいタブで開く | ONにすると `target="_blank"` が付く |
+| ピン留め | ONにするとブロック一覧の先頭に表示される（ブロック側の設定も必要） |
 
-#### 利用可能な属性
+リンク先の差し替えは `post_link` フィルターで実現しているため、以下すべてに自動で効きます:
 
-- `layout` - テンプレート名（list, cards, tabs, tabs_by_category等）
-- `cats` - カテゴリID（カンマ区切り）
-- `per_page` - 表示件数
-- `pinned_first` - ピン留め優先表示（1 or 0）
-- `exclude_expired` - 期限切れ除外（1 or 0）
+- `core/latest-posts`（WordPress標準の最新の投稿ブロック）
+- 本プラグインの andW News ブロック
+- テーマのアーカイブ・検索結果
+- `get_permalink()` を使うあらゆる箇所
 
-#### Gutenbergブロック
+管理画面（`is_admin()`）では差し替えは行われません。
 
-ブロックエディタで「andW News List」ブロックを検索してご利用ください。
+### 新着一覧ブロック
 
-### テンプレートカスタマイズ
+ブロックエディタで **「andW News」** を検索して挿入。
 
-プラグインの管理画面「お知らせチェンジャー設定」から、HTMLテンプレートを自由に編集できます。
+#### ブロック設定
 
-#### 利用可能なトークン
+| 設定 | デフォルト | 説明 |
+|---|---|---|
+| 表示件数 | 10 | 1〜50件 |
+| カテゴリーバッジを表示 | ON | 各投稿のカテゴリーをバッジで表示 |
+| タブ切り替え | OFF | ONにするとカテゴリー別タブUIで表示 |
+| ピン留め優先 | OFF | ONにするとピン留め投稿を先頭に |
+| カテゴリー絞り込み | 全て | 表示するカテゴリーを選択 |
 
-- `{title}` - 記事タイトル
-- `{date}` - 投稿日
-- `{excerpt}` - 抜粋
-- `{thumbnail}` - サムネイル画像
-- `{event_date}` - イベント日付（SCFフィールド）
-- `{link_url}` - リンクURL
-- `{link_target}` - リンクターゲット
-- `{categories}` - カテゴリーバッジ（HTML形式）
-
-#### 日付フォーマット機能
-
-日付トークンには柔軟なフォーマットオプションが利用できます：
-
-**基本的な使い方:**
-- `{date}` - デフォルト形式（例：2025.1.31）
-- `{date:jp}` - 日本語形式（例：2025年1月31日）
-- `{date:short}` - 短縮形式（例：1/31）
-- `{event_date:jp}` - イベント日付の日本語形式
-
-**定義済みフォーマット:**
-- `jp` → Y年n月j日（2025年1月31日）
-- `jp_full` → Y年m月d日（2025年01月31日）
-- `short` → n/j（1/31）
-- `short_full` → m/d（01/31）
-- `iso` → Y-m-d（2025-01-31）
-- `dot` → Y.m.d（2025.1.31）
-- `slash` → Y/m/d（2025/1/31）
-- `w` → Y年n月j日(D)（2025年1月31日(金)）
-- `w_full` → Y年m月d日(D)（2025年01月31日(金)）
-
-**カスタムフォーマット:**
-PHPの日付フォーマット文字列も直接使用可能：
-- `{date:Y年n月j日}` → 2025年1月31日
-- `{date:m/d/Y}` → 01/31/2025
-- `{date:F j, Y}` → January 31, 2025
-
-**使用例:**
-```html
-<li>
-    <time datetime="{date:iso}">{date:jp}</time>
-    <div class="andw-categories-wrapper">
-        {categories}
-    </div>
-    <a href="{link_url}">{title}</a>
-</li>
-```
-
-### カテゴリーバッジ機能
-
-各投稿に割り当てられたカテゴリーを色分けされたバッジとして表示できます。
-
-#### 利用可能なカテゴリー色
-
-- **news**: 青系バッジ（#e3f2fd / #1976d2）
-- **event**: 紫系バッジ（#f3e5f5 / #7b1fa2）
-- **info**: 緑系バッジ（#e8f5e8 / #388e3c）
-- **important**: 赤系バッジ（#ffebee / #d32f2f）
-- **notice**: オレンジ系バッジ（#fff3e0 / #f57c00）
-- その他: グレー系バッジ（デフォルト）
-
-#### カテゴリーバッジの出力例
-
-```html
-<div class="andw-categories-wrapper">
-  <span class="andw-category andw-category-news">ニュース</span>
-  <span class="andw-category andw-category-event">イベント</span>
-  <span class="andw-category andw-category-important">重要</span>
-</div>
-```
-
-#### SCFフィールド条件分岐の例
-
-**リンクタイプによる分岐:**
-```html
-{if andw-link-type="none"}
-    <div class="andw-categories-wrapper">{categories}</div>
-    {title}
-{/if}
-{if andw-link-type="external"}
-    <div class="andw-categories-wrapper">{categories}</div>
-    <a href="{link_url}" target="{link_target}">{title}</a>
-{/if}
-```
-
-**イベント日付による分岐:**
-```html
-{if andw-event-type="single"}
-    {andw-event-single-date}
-{/if}
-{if andw-event-type="period"}
-    {andw-event-start-date} - {andw-event-end-date}
-{/if}
-```
-
-### CSS上書き
-
-テーマの以下のパスにCSSファイルを配置すると、プラグインのデフォルトCSSを上書きできます：
+#### リスト表示（タブOFF）
 
 ```
-/wp-content/themes/テーマ名/andw-news/レイアウト名.css
+日付
+[カテゴリー] タイトル
+──────────────────
+日付
+[カテゴリー] タイトル
 ```
 
-### Smart Custom Fields 対応フィールド
+#### タブ表示（タブON）
 
-- `andw_news_pinned` - ピン留め設定
-- `andw_link_type` - リンクタイプ（self/internal/external）
-- `andw_internal_link` - 内部リンク投稿ID
-- `andw_external_link` - 外部リンクURL
-- `andw_link_target` - リンクターゲット
-- `andw_event_type` - イベントタイプ
-- その他イベント関連フィールド
+```
+[すべて] [ニュース] [イベント] [お知らせ]
+─────────────────────────────────────
+日付
+[カテゴリー] タイトル
+日付
+[カテゴリー] タイトル
+```
 
-## Installation
+- 「すべて」タブが自動で先頭に追加される
+- タブはWAI-ARIA準拠（キーボード操作: 矢印キー、Home、End、Enter、Space）
 
-1. プラグインファイルを `/wp-content/plugins/andw-news/` ディレクトリにアップロード
-2. WordPress管理画面の「プラグイン」メニューでプラグインを有効化
-3. 「お知らせチェンジャー設定」メニューで設定を行う
+## カテゴリーバッジの色
 
-## Frequently Asked Questions
+カテゴリーのスラッグに応じて自動で色が付きます:
 
-### カスタム投稿タイプ「andw-news」が存在しない場合は？
+| スラッグ | 色 |
+|---|---|
+| `news` | 青 |
+| `event` | 紫 |
+| `info` | 緑 |
+| `important` | 赤 |
+| `notice` | オレンジ |
+| その他 | グレー |
 
-このプラグインは既存の「andw-news」投稿タイプを前提としています。投稿タイプが存在しない場合は別途作成していただく必要があります。
+テーマ側のCSSで `.andw-category-{slug}` を上書きすれば自由にカスタマイズ可能。
 
-### テンプレートが表示されない場合は？
-
-プラグインの管理画面でテンプレートが正しく設定されているか確認してください。また、CSSが無効化されていないかも確認してください。
-
-### Smart Custom Fieldsが必要ですか？
-
-基本的な表示にはSCFは必須ではありませんが、イベント日付やリンク設定などの高度な機能を利用する場合は推奨されます。
-
-## Screenshots
-
-1. 管理画面のテンプレート管理
-2. リストレイアウト表示例
-3. カードレイアウト表示例
-4. タブレイアウト表示例
-5. Gutenbergブロックの設定画面
-
-## Changelog
-
-### 0.1.0
-
-- 初回リリース
-- 基本テンプレート機能
-- ショートコード対応
-- Gutenbergブロック対応
-- 管理画面実装
-
-## Upgrade Notice
-
-### 0.1.0
-
-初回リリースです。
-
-## 開発者向け情報
-
-### フィルターフック
-
-プラグインでは以下のフィルターフックを提供予定です：
-
-- `andw_news_query_args` - クエリ引数のフィルター
-- `andw_news_post_data` - 投稿データのフィルター
-- `andw_news_template_tokens` - テンプレートトークンのフィルター
-
-### アクションフック
-
-- `andw_news_before_render` - レンダリング前
-- `andw_news_after_render` - レンダリング後
-
-## License
-
-このプラグインはGPLv2以降のライセンスの下で配布されています。
-
-## Development
-
-### Requirements
-
-- WordPress 6.5以上
-- PHP 7.4以上
-- Smart Custom Fields（推奨）
-
-### File Structure
+## ファイル構成
 
 ```
 andw-news/
-├── andw-news.php              # メインプラグインファイル
-├── includes/                  # PHPクラスファイル
-│   ├── class-template-manager.php
-│   ├── class-query-handler.php
-│   ├── class-shortcode.php
-│   ├── class-gutenberg-block.php
-│   └── class-admin.php
-├── assets/                    # CSS/JSアセット
+├── andw-news.php              # メインファイル（フィルター、メタボックス、エンキュー）
+├── includes/
+│   └── class-block.php        # ブロック登録 + サーバーサイドレンダリング
+├── assets/
 │   ├── css/
+│   │   ├── list.css           # リストレイアウト
+│   │   └── tabs.css           # タブUI
 │   ├── js/
+│   │   └── tabs.js            # タブ切り替え（フロント用）
 │   └── block/
-├── languages/                 # 翻訳ファイル
-├── readme.txt                 # WordPress.org用readme
-├── README.md                  # GitHub用README
-└── uninstall.php             # アンインストール処理
+│       ├── block.json         # ブロックメタデータ
+│       └── block.js           # ブロックエディタ
+└── uninstall.php              # アンインストール時のクリーンアップ
 ```
 
-### Security Features
+## メタキー
 
-- nonce + current_user_can() による権限チェック
-- esc_html/esc_url/wp_kses による出力エスケープ
-- 翻訳対応（Text Domain: andw-news）
-- 接頭辞 andw_news_ による名前空間管理
+| メタキー | 値 | 説明 |
+|---|---|---|
+| `andw_link_url` | URL文字列 | リンク先URL（空 = 通常のパーマリンク） |
+| `andw_link_target` | `_blank` or 空 | 新しいタブで開くか |
+| `andw_pinned` | `1` or 空 | ピン留め |
 
-### Contributing
+REST API 経由でも読み書き可能（`register_post_meta` で `show_in_rest: true` 設定済み）。
 
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add some amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
+## v1 からの移行
 
-## Support
+v2 は通常の「投稿（post）」を使います。v1 のカスタム投稿タイプ `andw-news` から移行する場合:
 
-- [Issues](https://github.com/yasuo3o3/andw-news/issues)
-- [Documentation](https://docs.example.com/andw-news)
+1. [Post Type Switcher](https://wordpress.org/plugins/post-type-switcher/) 等のプラグインで投稿タイプを `post` に変更
+2. タクソノミー `andw_news_category` のタームを WordPress 標準の `category` に再割り当て
+3. メタキーの変換（必要に応じて）:
+   - `andw-external-link` → `andw_link_url`
+   - `andw-link-target` → `andw_link_target`
+   - `andw-news-pinned` → `andw_pinned`
 
-## Author
+## v1 から削除された機能
 
-**yasuo3o3**
-- Website: https://yasuo-o.xyz/
-- GitHub: [@yasuo3o3](https://github.com/yasuo3o3)
+- カスタム投稿タイプ / カスタムタクソノミー
+- テンプレートエンジン（トークン、条件分岐）
+- テンプレート管理画面
+- ショートコード `[andw_news]`
+- Smart Custom Fields（SCF）連携
+- イベント日付フィールド
+- Transientキャッシュ
+- テーマCSS上書き検出
+- デフォルトサムネイル設定
+- カード / ULリストレイアウト
+
+## 動作要件
+
+- WordPress 6.5 以上
+- PHP 7.4 以上
+
+## License
+
+GPLv2 or later

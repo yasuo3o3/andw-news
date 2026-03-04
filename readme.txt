@@ -1,167 +1,63 @@
 === andW News ===
 Contributors: yasuo3o3
-Tags: news, custom-post-type, template, layout, shortcode
+Tags: news, post-link, block, tabs
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.0.3
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-カスタム投稿タイプ「andw-news」の記事を様々なテンプレートで表示するプラグイン
+投稿のリンク先を変更し、新着一覧ブロックを提供するプラグイン
 
 == Description ==
 
-andW Newsは、カスタム投稿タイプ「andw-news」の記事を柔軟なテンプレートシステムで表示できるWordPressプラグインです。
+andW News は2つの機能を提供します:
 
-= 主な機能 =
+1. **投稿のリンク先を変更** — 投稿編集画面で外部URLを設定すると、サイト上のすべてのリンクがそのURLに差し替わる
+2. **新着一覧ブロック** — リスト表示 + カテゴリー別タブ切り替えに対応
 
-* 複数のレイアウトテンプレート（リスト、カード、タブ）
-* テンプレートの管理（作成、編集、複製、削除）
-* ショートコード対応
-* Gutenbergブロック対応
-* Smart Custom Fields（SCF）連携
-* テーマCSS上書き機能
-* ピン留め・優先表示機能
+= リンク先の変更 =
 
-= 使用方法 =
+投稿の編集画面サイドバーの「andW News — リンク設定」メタボックスで設定します。
 
-**ショートコード:**
-`[andw_news layout="cards" per_page="10"]`
+* リンク先URL — 空欄なら通常のパーマリンク
+* 新しいタブで開く — target="_blank" が付く
+* ピン留め — ブロック一覧の先頭に表示
 
-**利用可能な属性:**
-* `layout` - テンプレート名（list, cards, tabs, tabs_by_category等）
-  ※複製したテンプレートの場合は管理画面で確認できる内部キー（[...]内の文字列）を指定
-* `cats` - カテゴリID（カンマ区切り）
-* `per_page` - 表示件数
-* `pinned_first` - ピン留め優先表示（1 or 0）
-* `exclude_expired` - 期限切れ除外（1 or 0）
+post_link フィルターで実現しているため、標準の「最新の投稿」ブロックやテーマのアーカイブにも自動で効きます。
 
-**Gutenbergブロック:**
-ブロックエディタで「andW News List」ブロックを検索してご利用ください。
+= 新着一覧ブロック =
 
-= テンプレートカスタマイズ =
+ブロックエディタで「andW News」を検索して挿入。
 
-プラグインの管理画面「お知らせチェンジャー設定」から、HTMLテンプレートを自由に編集できます。
+* 表示件数（1〜50件）
+* カテゴリーバッジ表示のON/OFF
+* タブ切り替えのON/OFF（カテゴリー別タブUI）
+* ピン留め優先のON/OFF
+* カテゴリー絞り込み
 
-**基本トークン:**
-* `{title}` - 記事タイトル
-* `{date}` - 投稿日
-* `{excerpt}` - 抜粋
-* `{thumbnail}` - サムネイル画像
-* `{event_date}` - イベント日付（SCFフィールド）
-* `{link_url}` - リンクURL
-* `{link_target}` - リンクターゲット
-
-**SCFフィールドトークン:**
-* `{andw_news_pinned}` - ピン留め設定
-* `{andw_link_type}` - リンクタイプ（self/internal/external）
-* `{andw_internal_link}` - 内部リンク投稿ID
-* `{andw_external_link}` - 外部リンクURL
-* `{andw_link_target}` - リンクターゲット
-* `{andw_event_type}` - イベントタイプ
-* `{andw_event_single_date}` - 単一イベント日付
-* `{andw_event_start_date}` - イベント開始日
-* `{andw_event_end_date}` - イベント終了日
-* `{andw_event_free_text}` - イベントフリーテキスト
-* `{andw_subcontents}` - サブコンテンツ
-* その他の`andw_`または`andw-`プレフィックスのSCFフィールド
-
-**条件分岐構文:**
-* `{if field_name}内容{/if}` - フィールドに値がある場合に表示
-* `{ifnot field_name}内容{/ifnot}` - フィールドが空の場合に表示
-* `{if field_name="value"}内容{/if}` - フィールドが特定の値の場合に表示
-* `{if field_name!="value"}内容{/if}` - フィールドが特定の値でない場合に表示
-* `{if field_name}真の内容{else}偽の内容{/if}` - if-else構文
-
-**条件分岐の使用例:**
-```html
-{if andw_link_type="external"}
-    <span class="external-link">外部リンク</span>
-{/if}
-
-{if andw_event_date}
-    <div class="event-info">{event_date}</div>
-{else}
-    <div class="no-event">イベント日程なし</div>
-{/if}
-
-{ifnot thumbnail}
-    <div class="no-image">画像なし</div>
-{/ifnot}
-```
-
-= CSS上書き =
-
-テーマの以下のパスにCSSファイルを配置すると、プラグインのデフォルトCSSを上書きできます：
-`/wp-content/themes/テーマ名/andw-news/レイアウト名.css`
-
-= Smart Custom Fields 対応フィールド =
-
-* `andw_news_pinned` - ピン留め設定
-* `andw_link_type` - リンクタイプ（self/internal/external）
-* `andw_internal_link` - 内部リンク投稿ID
-* `andw_external_link` - 外部リンクURL
-* `andw_link_target` - リンクターゲット
-* `andw_event_type` - イベントタイプ
-* その他イベント関連フィールド
+タブUIはWAI-ARIA準拠でキーボード操作に対応しています。
 
 == Installation ==
 
-1. プラグインファイルを `/wp-content/plugins/andw-news/` ディレクトリにアップロード
-2. WordPress管理画面の「プラグイン」メニューでプラグインを有効化
-3. 「お知らせチェンジャー設定」メニューで設定を行う
+1. プラグインフォルダを `/wp-content/plugins/andw-news/` に配置
+2. 管理画面の「プラグイン」で有効化
 
-== Frequently Asked Questions ==
-
-= カスタム投稿タイプ「andw-news」が存在しない場合は？ =
-
-このプラグインは既存の「andw-news」投稿タイプを前提としています。投稿タイプが存在しない場合は別途作成していただく必要があります。
-
-= テンプレートが表示されない場合は？ =
-
-プラグインの管理画面でテンプレートが正しく設定されているか確認してください。また、CSSが無効化されていないかも確認してください。
-
-= Smart Custom Fieldsが必要ですか？ =
-
-基本的な表示にはSCFは必須ではありませんが、イベント日付やリンク設定などの高度な機能を利用する場合は推奨されます。
-
-== Screenshots ==
-
-1. 管理画面のテンプレート管理
-2. リストレイアウト表示例
-3. カードレイアウト表示例
-4. タブレイアウト表示例
-5. Gutenbergブロックの設定画面
+設定画面はありません。投稿の編集画面のメタボックスとブロックの設定で完結します。
 
 == Changelog ==
 
+= 2.0.0 =
+* 通常の「投稿」を使う方式に変更（カスタム投稿タイプを廃止）
+* テンプレートエンジン・ショートコード・管理画面を廃止
+* Gutenbergブロック1つに集約（リスト + タブ切り替え）
+* post_link フィルターによるリンク先変更機能
+* メタボックス（リンクURL、ターゲット、ピン留め）
+
+= 0.0.3 =
+* カテゴリーなしリストとカテゴリー付きリスト
+* ネスト条件分岐問題を修正
+
 = 0.0.1 =
 * 初回リリース
-* 基本テンプレート機能
-* ショートコード対応
-* Gutenbergブロック対応
-* 管理画面実装
-
-== Upgrade Notice ==
-
-= 0.0.1 =
-初回リリースです。
-
-== 開発者向け情報 ==
-
-= フィルターフック =
-
-プラグインでは以下のフィルターフックを提供予定です：
-* `andw_news_query_args` - クエリ引数のフィルター
-* `andw_news_post_data` - 投稿データのフィルター
-* `andw_news_template_tokens` - テンプレートトークンのフィルター
-
-= アクションフック =
-
-* `andw_news_before_render` - レンダリング前
-* `andw_news_after_render` - レンダリング後
-
-== License ==
-
-このプラグインはGPLv2以降のライセンスの下で配布されています。

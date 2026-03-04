@@ -1,56 +1,33 @@
 /**
- * andW News Gutenberg Block
+ * andW News — ブロックエディタ
  */
-
 (function() {
     'use strict';
 
-    const { registerBlockType } = wp.blocks;
-    const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, SelectControl, CheckboxControl, RangeControl } = wp.components;
-    const { createElement: el, Fragment } = wp.element;
-    const { __ } = wp.i18n;
+    var registerBlockType = wp.blocks.registerBlockType;
+    var InspectorControls = wp.blockEditor.InspectorControls;
+    var useBlockProps      = wp.blockEditor.useBlockProps;
+    var PanelBody          = wp.components.PanelBody;
+    var RangeControl       = wp.components.RangeControl;
+    var ToggleControl      = wp.components.ToggleControl;
+    var CheckboxControl    = wp.components.CheckboxControl;
+    var el                 = wp.element.createElement;
+    var Fragment           = wp.element.Fragment;
+    var __                 = wp.i18n.__;
 
-    registerBlockType('andw-news-changer/news-list', {
-        title: __('andW News List', 'andw-news'),
-        description: __('andw-news投稿タイプの記事一覧を表示します', 'andw-news'),
-        category: 'widgets',
-        icon: 'admin-page',
-        keywords: [__('news', 'andw-news'), __('list', 'andw-news'), __('andw', 'andw-news')],
-
-        attributes: {
-            layout: {
-                type: 'string',
-                default: ''
-            },
-            categories: {
-                type: 'array',
-                default: []
-            },
-            perPage: {
-                type: 'number',
-                default: 10
-            },
-            pinnedFirst: {
-                type: 'boolean',
-                default: false
-            },
-            excludeExpired: {
-                type: 'boolean',
-                default: false
-            }
-        },
-
+    registerBlockType('andw-news/latest-posts', {
         edit: function(props) {
-            const { attributes, setAttributes } = props;
-            const { layout, categories, perPage, pinnedFirst, excludeExpired } = attributes;
+            var attributes    = props.attributes;
+            var setAttributes = props.setAttributes;
+            var perPage        = attributes.perPage;
+            var categories     = attributes.categories;
+            var showCategories = attributes.showCategories;
+            var showTabs       = attributes.showTabs;
+            var pinnedFirst    = attributes.pinnedFirst;
 
-            // テンプレートオプションを取得
-            const templateOptions = andwNewsBlock.templates || [];
-            const categoryOptions = andwNewsBlock.categories || [];
+            var categoryOptions = (andwNewsBlock && andwNewsBlock.categories) || [];
 
-            // useBlockPropsを使用してブロック属性を取得
-            const blockProps = useBlockProps({
+            var blockProps = useBlockProps({
                 className: 'andw-news-block-placeholder',
                 style: {
                     padding: '20px',
@@ -66,18 +43,6 @@
                         title: __('表示設定', 'andw-news'),
                         initialOpen: true
                     },
-                        el(SelectControl, {
-                            label: __('レイアウト', 'andw-news'),
-                            value: layout,
-                            options: [
-                                { label: __('デフォルト', 'andw-news'), value: '' },
-                                ...templateOptions
-                            ],
-                            onChange: function(value) {
-                                setAttributes({ layout: value });
-                            }
-                        }),
-
                         el(RangeControl, {
                             label: __('表示件数', 'andw-news'),
                             value: perPage,
@@ -88,35 +53,46 @@
                             }
                         }),
 
-                        el(CheckboxControl, {
-                            label: __('ピン留めを先頭に表示', 'andw-news'),
-                            checked: pinnedFirst,
+                        el(ToggleControl, {
+                            label: __('カテゴリーバッジを表示', 'andw-news'),
+                            checked: showCategories,
                             onChange: function(value) {
-                                setAttributes({ pinnedFirst: value });
+                                setAttributes({ showCategories: value });
                             }
                         }),
 
-                        el(CheckboxControl, {
-                            label: __('期限切れ記事を除外', 'andw-news'),
-                            checked: excludeExpired,
+                        el(ToggleControl, {
+                            label: __('タブ切り替え', 'andw-news'),
+                            help: showTabs
+                                ? __('カテゴリー別タブで表示します', 'andw-news')
+                                : __('フラットなリストで表示します', 'andw-news'),
+                            checked: showTabs,
                             onChange: function(value) {
-                                setAttributes({ excludeExpired: value });
+                                setAttributes({ showTabs: value });
+                            }
+                        }),
+
+                        el(ToggleControl, {
+                            label: __('ピン留め優先', 'andw-news'),
+                            checked: pinnedFirst,
+                            onChange: function(value) {
+                                setAttributes({ pinnedFirst: value });
                             }
                         })
                     ),
 
                     categoryOptions.length > 0 && el(PanelBody, {
-                        title: __('カテゴリフィルター', 'andw-news'),
+                        title: __('カテゴリー絞り込み', 'andw-news'),
                         initialOpen: false
                     },
                         categoryOptions.map(function(category) {
                             return el(CheckboxControl, {
                                 key: category.value,
                                 label: category.label,
-                                checked: categories.includes(category.value),
+                                checked: categories.indexOf(category.value) !== -1,
                                 onChange: function(checked) {
-                                    const newCategories = checked
-                                        ? [...categories, category.value]
+                                    var newCategories = checked
+                                        ? categories.concat([category.value])
                                         : categories.filter(function(cat) { return cat !== category.value; });
                                     setAttributes({ categories: newCategories });
                                 }
@@ -126,32 +102,16 @@
                 ),
 
                 el('div', blockProps,
-                    el('div', {
-                        style: {
-                            fontSize: '18px',
-                            marginBottom: '10px'
-                        }
-                    }, '📰'),
-                    el('div', {
-                        style: {
-                            fontWeight: 'bold',
-                            marginBottom: '5px'
-                        }
-                    }, __('andW News List', 'andw-news')),
-                    el('div', {
-                        style: {
-                            fontSize: '14px',
-                            color: '#666'
-                        }
-                    },
-                        layout
-                            ? __('レイアウト: ', 'andw-news') + (templateOptions.find(t => t.value === layout)?.label || layout)
-                            : __('デフォルトレイアウトで表示'),
-                        el('br'),
-                        __('表示件数: ', 'andw-news') + perPage + __('件', 'andw-news'),
+                    el('div', { style: { fontWeight: 'bold', marginBottom: '5px' } },
+                        __('andW News', 'andw-news')
+                    ),
+                    el('div', { style: { fontSize: '14px', color: '#666' } },
+                        showTabs ? __('タブ表示', 'andw-news') : __('リスト表示', 'andw-news'),
+                        ' / ',
+                        perPage + __('件', 'andw-news'),
                         categories.length > 0 && el('span', {},
-                            el('br'),
-                            __('カテゴリ絞り込み: ', 'andw-news') + categories.length + __('件選択', 'andw-news')
+                            ' / ',
+                            categories.length + __('カテゴリ選択', 'andw-news')
                         )
                     )
                 )
@@ -159,9 +119,7 @@
         },
 
         save: function() {
-            // サーバーサイドレンダリングを使用するため、saveは空
             return null;
         }
     });
-
 })();

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: andW News
- * Description: カスタム投稿タイプ「andw-news」の記事を様々なテンプレートで表示するプラグイン
- * Version: 0.0.3
+ * Description: 投稿のリンク先を変更し、新着一覧ブロックを提供するプラグイン
+ * Version: 2.0.0
  * Author: yasuo3o3
  * Author URI: https://yasuo-o.xyz/
  * License: GPLv2 or later
@@ -11,13 +11,11 @@
  * Requires PHP: 7.4
  */
 
-// 直接アクセスを防ぐ
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// プラグイン定数定義
-define('ANDW_NEWS_VERSION', '0.0.2');
+define('ANDW_NEWS_VERSION', '2.0.0');
 define('ANDW_NEWS_PLUGIN_FILE', __FILE__);
 define('ANDW_NEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ANDW_NEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -26,160 +24,192 @@ define('ANDW_NEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
  * プラグイン初期化
  */
 function andw_news_init() {
-    // 必要なファイルを読み込み
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-post-type.php';
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-template-manager.php';
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-query-handler.php';
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-shortcode.php';
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-admin.php';
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-gutenberg-block.php';
+    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-block.php';
+    new ANDW_News_Block();
 
-    // 翻訳ファイルの読み込みはWordPressが自動的に処理
-
-    // デバッグ機能（WP_DEBUGが有効な場合のみ）
-    if (defined('WP_DEBUG') && WP_DEBUG && file_exists(ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php')) {
-        require_once ANDW_NEWS_PLUGIN_DIR . 'debug-tools/debug-shortcode.php';
-    }
-
-    // 各クラスを初期化
-    new ANDW_News_Post_Type();
-    $template_manager = new ANDW_News_Template_Manager();
-    new ANDW_News_Query_Handler();
-    new ANDW_News_Shortcode();
-    new ANDW_News_Admin();
-    new ANDW_News_Gutenberg_Block();
-
-    // 管理画面でテンプレート変換を実行
-    if (is_admin()) {
-        add_action('admin_init', function() use ($template_manager) {
-            $template_manager->install_default_templates();
-        });
-    }
+    // メタキーをREST APIに公開
+    andw_news_register_meta();
 }
 add_action('init', 'andw_news_init');
 
 /**
- * プラグイン有効化フック
+ * カスタムメタフィールドを登録
  */
-function andw_news_activate() {
-    // 権限チェック
-    if (!current_user_can('activate_plugins')) {
+function andw_news_register_meta() {
+    register_post_meta('post', 'andw_link_url', [
+        'show_in_rest'      => true,
+        'single'            => true,
+        'type'              => 'string',
+        'sanitize_callback' => 'esc_url_raw',
+    ]);
+
+    register_post_meta('post', 'andw_link_target', [
+        'show_in_rest'      => true,
+        'single'            => true,
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+
+    register_post_meta('post', 'andw_pinned', [
+        'show_in_rest'      => true,
+        'single'            => true,
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+}
+
+/**
+ * 投稿のパーマリンクを差し替え
+ */
+function andw_news_filter_post_link($url, $post) {
+    if (is_admin()) {
+        return $url;
+    }
+
+    $custom_url = get_post_meta($post->ID, 'andw_link_url', true);
+    if (!empty($custom_url)) {
+        return esc_url($custom_url);
+    }
+
+    return $url;
+}
+add_filter('post_link', 'andw_news_filter_post_link', 10, 2);
+
+/**
+ * メタボックスを登録
+ */
+function andw_news_add_meta_boxes() {
+    add_meta_box(
+        'andw-news-link',
+        'andW News — リンク設定',
+        'andw_news_render_meta_box',
+        'post',
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'andw_news_add_meta_boxes');
+
+/**
+ * メタボックスを描画
+ */
+function andw_news_render_meta_box($post) {
+    wp_nonce_field('andw_news_meta', 'andw_news_nonce');
+
+    $link_url    = get_post_meta($post->ID, 'andw_link_url', true);
+    $link_target = get_post_meta($post->ID, 'andw_link_target', true);
+    $pinned      = get_post_meta($post->ID, 'andw_pinned', true);
+    ?>
+    <p>
+        <label for="andw_link_url">リンク先URL</label><br>
+        <input type="url" id="andw_link_url" name="andw_link_url"
+               value="<?php echo esc_attr($link_url); ?>"
+               style="width:100%;" placeholder="空欄なら通常のパーマリンク">
+    </p>
+    <p>
+        <label>
+            <input type="checkbox" name="andw_link_target" value="_blank"
+                   <?php checked($link_target, '_blank'); ?>>
+            新しいタブで開く
+        </label>
+    </p>
+    <p>
+        <label>
+            <input type="checkbox" name="andw_pinned" value="1"
+                   <?php checked($pinned, '1'); ?>>
+            ピン留め（一覧の先頭に表示）
+        </label>
+    </p>
+    <?php
+}
+
+/**
+ * メタボックスの値を保存
+ */
+function andw_news_save_meta($post_id) {
+    if (!isset($_POST['andw_news_nonce'])) {
+        return;
+    }
+    if (!wp_verify_nonce($_POST['andw_news_nonce'], 'andw_news_meta')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
         return;
     }
 
-    // デフォルトテンプレートを登録
-    require_once ANDW_NEWS_PLUGIN_DIR . 'includes/class-template-manager.php';
-    $template_manager = new ANDW_News_Template_Manager();
-    $template_manager->install_default_templates();
-
-    // フラッシュルールを更新
-    flush_rewrite_rules();
-}
-register_activation_hook(__FILE__, 'andw_news_activate');
-
-/**
- * プラグイン無効化フック
- */
-function andw_news_deactivate() {
-    // フラッシュルールを更新
-    flush_rewrite_rules();
-}
-register_deactivation_hook(__FILE__, 'andw_news_deactivate');
-
-/**
- * CSS/JSアセットを登録
- */
-function andw_news_register_assets() {
-    // CSS無効化設定を取得
-    $disable_css = get_option('andw_news_disable_css', false);
-
-    if (!$disable_css) {
-        // 現在のデフォルトテンプレートを取得
-        $default_template = get_option('andw_news_default_template', 'list');
-
-        // テーマのCSSを優先してチェック
-        $theme_css_path = get_stylesheet_directory() . '/andw-news-changer/' . $default_template . '.css';
-        $theme_css_url = get_stylesheet_directory_uri() . '/andw-news-changer/' . $default_template . '.css';
-
-        if (file_exists($theme_css_path)) {
-            // テーマのCSSを使用
-            wp_enqueue_style(
-                'andw-news-' . $default_template,
-                $theme_css_url,
-                [],
-                filemtime($theme_css_path)
-            );
+    // リンク先URL
+    if (isset($_POST['andw_link_url'])) {
+        $url = esc_url_raw(wp_unslash($_POST['andw_link_url']));
+        if (!empty($url)) {
+            update_post_meta($post_id, 'andw_link_url', $url);
         } else {
-            // プラグインのCSSを使用
-            $plugin_css_path = ANDW_NEWS_PLUGIN_DIR . 'assets/css/' . $default_template . '.css';
-            if (file_exists($plugin_css_path)) {
-                wp_enqueue_style(
-                    'andw-news-' . $default_template,
-                    ANDW_NEWS_PLUGIN_URL . 'assets/css/' . $default_template . '.css',
-                    [],
-                    filemtime($plugin_css_path)
-                );
-            }
+            delete_post_meta($post_id, 'andw_link_url');
         }
-
-        // カスタムCSS処理
-        andw_news_enqueue_custom_css($default_template);
     }
 
-    // タブ用JavaScript（tabs使用時のみ）
-    $should_load_tabs = false;
-
-    // 管理画面では常に読み込み
-    if (is_admin()) {
-        $should_load_tabs = true;
+    // ターゲット
+    $target = isset($_POST['andw_link_target']) ? '_blank' : '';
+    if (!empty($target)) {
+        update_post_meta($post_id, 'andw_link_target', $target);
+    } else {
+        delete_post_meta($post_id, 'andw_link_target');
     }
-    // フロントエンドでの判定
-    else {
-        // 単一投稿ページの場合
-        if (is_singular()) {
-            $post_id = get_queried_object_id();
-            if ($post_id) {
-                $content = get_post_field('post_content', $post_id);
-                if ($content) {
-                    $should_load_tabs = has_block('andw-news-changer/news-list', $content) ||
-                                      has_shortcode($content, 'andw_news');
+
+    // ピン留め
+    $pinned = isset($_POST['andw_pinned']) ? '1' : '';
+    if (!empty($pinned)) {
+        update_post_meta($post_id, 'andw_pinned', $pinned);
+    } else {
+        delete_post_meta($post_id, 'andw_pinned');
+    }
+}
+add_action('save_post_post', 'andw_news_save_meta');
+
+/**
+ * フロント用CSS/JSをエンキュー
+ */
+function andw_news_enqueue_assets() {
+    // list.css は常に読み込み（ブロック使用時のみが理想だが、軽量なので許容）
+    wp_enqueue_style(
+        'andw-news-list',
+        ANDW_NEWS_PLUGIN_URL . 'assets/css/list.css',
+        [],
+        ANDW_NEWS_VERSION
+    );
+
+    // tabs.css と tabs.js はブロック検出時のみ
+    $needs_tabs = false;
+
+    if (is_singular()) {
+        $post_id = get_queried_object_id();
+        if ($post_id) {
+            $needs_tabs = has_block('andw-news/latest-posts', $post_id);
+        }
+    }
+
+    if (!$needs_tabs) {
+        global $wp_query;
+        if (isset($wp_query->posts) && is_array($wp_query->posts)) {
+            foreach ($wp_query->posts as $post) {
+                if (has_block('andw-news/latest-posts', $post->post_content)) {
+                    $needs_tabs = true;
+                    break;
                 }
             }
         }
+    }
 
-        // まだ見つからない場合はグローバル検索（アーカイブページ等）
-        if (!$should_load_tabs) {
-            global $wp_query;
-            if (isset($wp_query->posts) && is_array($wp_query->posts)) {
-                foreach ($wp_query->posts as $post) {
-                    // ブロックチェック：投稿内容を直接渡す
-                    if (has_block('andw-news-changer/news-list', $post->post_content)) {
-                        $should_load_tabs = true;
-                        break;
-                    }
+    if ($needs_tabs) {
+        wp_enqueue_style(
+            'andw-news-tabs',
+            ANDW_NEWS_PLUGIN_URL . 'assets/css/tabs.css',
+            [],
+            ANDW_NEWS_VERSION
+        );
 
-                    // parse_blocks()による追加チェック（より確実）
-                    if (!$should_load_tabs && function_exists('parse_blocks')) {
-                        $blocks = parse_blocks($post->post_content);
-                        foreach ($blocks as $block) {
-                            if ($block['blockName'] === 'andw-news-changer/news-list') {
-                                $should_load_tabs = true;
-                                break 2; // 外側のループも抜ける
-                            }
-                        }
-                    }
-
-                    // ショートコードチェック
-                    if (!$should_load_tabs && function_exists('has_shortcode') && has_shortcode($post->post_content, 'andw_news')) {
-                        $should_load_tabs = true;
-                        break;
-                    }
-                }
-            }
-        }
-    } // else ブロックの終了
-
-    if ($should_load_tabs) {
         wp_enqueue_script(
             'andw-news-tabs',
             ANDW_NEWS_PLUGIN_URL . 'assets/js/tabs.js',
@@ -189,80 +219,4 @@ function andw_news_register_assets() {
         );
     }
 }
-add_action('wp_enqueue_scripts', 'andw_news_register_assets');
-
-/**
- * 管理画面用アセットを登録
- */
-function andw_news_admin_assets($hook) {
-    // 管理画面ページでのみ読み込み
-    if ($hook !== 'settings_page_andw-news') {
-        return;
-    }
-
-    // WordPressメディアライブラリを有効化
-    wp_enqueue_media();
-
-    wp_enqueue_script(
-        'andw-news-admin',
-        ANDW_NEWS_PLUGIN_URL . 'assets/js/admin.js',
-        ['jquery'],
-        ANDW_NEWS_VERSION,
-        true
-    );
-
-    wp_localize_script('andw-news-admin', 'andwNewsAdmin', [
-        'nonce' => wp_create_nonce('andw_news_admin'),
-        'ajaxurl' => admin_url('admin-ajax.php')
-    ]);
-}
-add_action('admin_enqueue_scripts', 'andw_news_admin_assets');
-
-/**
- * テンプレート専用カスタムCSSを処理
- *
- * @param string $template_name テンプレート名
- */
-function andw_news_enqueue_custom_css($template_name) {
-    // CSS無効化設定を確認
-    $disable_css = get_option('andw_news_disable_css', false);
-    if ($disable_css) {
-        return;
-    }
-
-    // テンプレートマネージャーからカスタムCSSを取得
-    $template_manager = new ANDW_News_Template_Manager();
-    $templates = $template_manager->get_templates();
-
-    if (isset($templates[$template_name]['css']) && !empty($templates[$template_name]['css'])) {
-        $custom_css = $templates[$template_name]['css'];
-        $handle = 'andw-news-' . $template_name;
-        $custom_handle = $handle . '-custom';
-
-        // 既存のデフォルトCSSハンドルが存在する場合はそれに追加
-        if (wp_style_is($handle, 'enqueued')) {
-            wp_add_inline_style($handle, $custom_css);
-        } else {
-            // デフォルトCSSが存在しない場合は、カスタムCSS専用ハンドルを作成
-            // 既にカスタムハンドルが登録されているかチェック
-            if (!wp_style_is($custom_handle, 'registered')) {
-                wp_register_style(
-                    $custom_handle,
-                    false, // URLなし（inline専用）
-                    [],
-                    ANDW_NEWS_VERSION
-                );
-            }
-
-            // カスタムハンドルをエンキューしてインラインCSSを追加
-            wp_enqueue_style($custom_handle);
-            wp_add_inline_style($custom_handle, $custom_css);
-        }
-    }
-
-    // 拡張フック: 他のプラグイン/テーマからのCSS追加を可能にする
-    do_action('andw_news_enqueue_template_css', $template_name, [
-        'disable_css' => $disable_css,
-        'templates' => $templates
-    ]);
-}
+add_action('wp_enqueue_scripts', 'andw_news_enqueue_assets');

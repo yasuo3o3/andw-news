@@ -1,39 +1,37 @@
 {
   "apiVersion": 2,
-  "name": "andw-news-changer/news-list",
-  "title": "andW News List",
-  "description": "andw-news投稿タイプの記事一覧を表示します",
+  "name": "andw-news/latest-posts",
+  "title": "andW News",
+  "description": "新着投稿の一覧を表示します。リンク先の変更やタブ切り替えに対応。",
   "category": "widgets",
-  "icon": "admin-page",
-  "keywords": ["news", "list", "andw"],
+  "icon": "megaphone",
+  "keywords": ["news", "list", "andw", "お知らせ"],
   "supports": {
     "html": false,
     "align": ["wide", "full"]
   },
   "attributes": {
-    "layout": {
-      "type": "string",
-      "default": ""
+    "perPage": {
+      "type": "number",
+      "default": 10
     },
     "categories": {
       "type": "array",
       "default": []
     },
-    "perPage": {
-      "type": "number",
-      "default": 10
+    "showCategories": {
+      "type": "boolean",
+      "default": true
     },
-    "pinnedFirst": {
+    "showTabs": {
       "type": "boolean",
       "default": false
     },
-    "excludeExpired": {
+    "pinnedFirst": {
       "type": "boolean",
       "default": false
     }
   },
   "textdomain": "andw-news",
-  "editorScript": "andw-news-block",
-  "editorStyle": "andw-news-block-editor",
-  "style": "andw-news-block-style"
+  "editorScript": "andw-news-block-editor"
 }
