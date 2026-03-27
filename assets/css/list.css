@@ -102,6 +102,12 @@
     color: #666;
 }
 
+/* andw-badge プラグインのNEWバッジをブロック内で非表示 */
+.andw-news-wrapper [class*="andw-badge"],
+.andw-news-wrapper .andw-badge {
+    display: none !important;
+}
+
 .andw-news-empty,
 .andw-news-error {
     text-align: center;
