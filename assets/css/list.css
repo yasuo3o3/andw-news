@@ -11,7 +11,7 @@
 
 .andw-news-item {
     border-bottom: 1px solid #e1e1e1;
-    padding: 15px 0;
+    padding: 8px 0;
     margin: 0;
 }
 
@@ -25,23 +25,27 @@
     padding-left: 12px;
 }
 
-.andw-news-content {
+/* メタ行: 日付 + カテゴリーバッジ 横並び */
+.andw-news-meta {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 3px;
 }
 
 .andw-news-date {
-    color: #666;
-    font-size: 14px;
-    margin: 0;
-    font-weight: normal;
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
+/* タイトル行 */
 .andw-news-title {
     margin: 0;
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .andw-news-title a {
@@ -56,23 +60,14 @@
 }
 
 /* カテゴリーバッジ */
-.andw-categories-wrapper {
-    margin-bottom: 8px;
-}
-
-.andw-categories-wrapper:empty {
-    display: none;
-}
-
 .andw-category {
     display: inline-block;
-    padding: 4px 8px;
-    margin-right: 8px;
-    margin-bottom: 4px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
     font-weight: bold;
     text-decoration: none;
+    line-height: 1.6;
 }
 
 /* カテゴリー別の色設定 */
@@ -103,7 +98,7 @@
 
 /* デフォルトカテゴリー色 */
 .andw-category:not([class*="andw-category-"]) {
-    background-color: #f5f5f5;
+    background-color: #f0f0f0;
     color: #666;
 }
 
@@ -126,10 +121,10 @@
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
     .andw-news-item {
-        padding: 12px 0;
+        padding: 6px 0;
     }
 
     .andw-news-title {
-        font-size: 15px;
+        font-size: 13px;
     }
 }

@@ -200,31 +200,29 @@ class ANDW_News_Block {
         $pinned_class = $pinned ? ' andw-news-item--pinned' : '';
 
         $output = '<div class="andw-news-item' . $pinned_class . '">';
-        $output .= '<div class="andw-news-content">';
 
-        // 日付
+        // メタ行（日付 + カテゴリー 横並び）
+        $output .= '<div class="andw-news-meta">';
         $output .= '<span class="andw-news-date">' . esc_html(get_the_date('Y.m.d', $post)) . '</span>';
 
-        // カテゴリーバッジ
         if ($show_categories) {
             $cats = get_the_category($post->ID);
             if (!empty($cats)) {
-                $output .= '<div class="andw-categories-wrapper">';
                 foreach ($cats as $cat) {
                     $output .= '<span class="andw-category andw-category-' . esc_attr($cat->slug) . '">'
                               . esc_html($cat->name) . '</span>';
                 }
-                $output .= '</div>';
             }
         }
+        $output .= '</div>';
 
-        // タイトル（リンク付き）
+        // タイトル行
         $output .= '<div class="andw-news-title">';
         $output .= '<a href="' . esc_url($url) . '"' . $target_attr . '>'
                   . esc_html(get_the_title($post)) . '</a>';
         $output .= '</div>';
 
-        $output .= '</div></div>';
+        $output .= '</div>';
 
         return $output;
     }
